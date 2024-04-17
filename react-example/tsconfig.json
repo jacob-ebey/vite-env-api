@@ -1,0 +1,22 @@
+{
+  "include": ["server.js", "src", "vite.config.ts"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [
+      "node",
+      "react/experimental",
+      "react-dom/experimental",
+      "vite/client"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true
+  }
+}
