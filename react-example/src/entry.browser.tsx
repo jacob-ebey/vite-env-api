@@ -17,6 +17,7 @@ async function callServer(id: string, args: unknown[]) {
   });
 
   const { returnValue, root } = await RSD.createFromFetch(responsePromise, {
+    ...__vite_client_manifest__,
     callServer,
   });
 
@@ -40,5 +41,32 @@ async function hydrate() {
   });
   React.startTransition(() => {
     hydrateRoot(document, <Root initialRoot={payload.root} />);
+  });
+}
+
+if (import.meta.hot) {
+  let lastController = new AbortController();
+  import.meta.hot.on("server-update", async (payload) => {
+    console.log("server-update", payload);
+    lastController.abort();
+    lastController = new AbortController();
+    const signal = lastController.signal;
+    const responsePromise = fetch(window.location.href, {
+      headers: {
+        Accept: "text/x-component",
+        "RSC-Refresh": "1",
+      },
+    });
+
+    const { root } = await RSD.createFromFetch(responsePromise, {
+      ...__vite_client_manifest__,
+      callServer,
+    });
+
+    if (signal.aborted) return;
+
+    React.startTransition(() => {
+      updateRoot(root);
+    });
   });
 }

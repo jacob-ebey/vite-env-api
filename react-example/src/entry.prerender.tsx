@@ -24,6 +24,10 @@ export default async function handler(
   const response = await callServer(request);
   if (!response.body) throw new Error("No body");
 
+  if (request.headers.get("RSC-Refresh") === "1") {
+    return response;
+  }
+
   const [bodyA, bodyB] = response.body.tee();
   const payload = await RSD.createFromNodeStream(
     stream.Readable.fromWeb(bodyA as streamWeb.ReadableStream<Uint8Array>),

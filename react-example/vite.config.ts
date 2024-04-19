@@ -34,6 +34,10 @@ global.serverModules = global.serverModules || new Set<string>();
 
 export default defineConfig({
   builder: reactServerBuilder({ serverModules }),
+  build: {
+    emptyOutDir: true,
+    assetsInlineLimit: 0,
+  },
   environments: {
     client: {
       build: {
@@ -192,7 +196,7 @@ function reactServerPlugin({
                   break;
               }
             },
-          }) as Plugin
+          }) as Plugin;
           break;
         case "server":
           ssr = true;
@@ -219,6 +223,8 @@ function reactServerPlugin({
         build: {
           ssr,
           manifest,
+          emitAssets: !ssr,
+          copyPublicDir: !ssr,
           rollupOptions: {
             preserveEntrySignatures: "exports-only",
             input,
@@ -515,6 +521,12 @@ function hattipRSCDevServer({
         }
         if (ids.length > 0) {
           runner.moduleCache.invalidateDepTree(ids);
+        }
+
+        if (ctx.environment.name === "server") {
+          ctx.server.environments.client.hot.send("server-update", {
+            ids,
+          });
         }
       }
     },

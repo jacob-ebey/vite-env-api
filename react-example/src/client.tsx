@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { sayHelloAction } from "./actions";
+// import { sayHelloAction } from "./actions";
 
 export function Counter() {
   const [count, setCount] = React.useState(0);
@@ -20,14 +20,14 @@ export function Counter() {
   );
 }
 
-console.log(sayHelloAction.$$id);
+// console.log(sayHelloAction.$$id);
 
-export function SayHello() {
-  // TODO: This doesn't work for some reason.
-  return (
-    <form action={sayHelloAction}>
-      <input name="name" />
-      <button type="submit">Say Hello</button>
-    </form>
-  );
-}
+// export function SayHello() {
+//   // TODO: This doesn't work for some reason.
+//   return (
+//     <form action={sayHelloAction}>
+//       <input name="name" />
+//       <button type="submit">Say Hello</button>
+//     </form>
+//   );
+// }
