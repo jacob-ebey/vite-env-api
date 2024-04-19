@@ -2,11 +2,10 @@ import * as context from "./context";
 
 import { Counter } from "./client";
 
-export async function App() {
+export function App() {
   const url = context.getURL();
-  await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const msg = "Hello, Server!!";
+  const msg = "Hello, Server!";
   return (
     <html lang="en">
       <head>

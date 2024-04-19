@@ -523,7 +523,13 @@ function hattipRSCDevServer({
           runner.moduleCache.invalidateDepTree(ids);
         }
 
-        if (ctx.environment.name === "server") {
+        if (
+          ctx.environment.name === "server" &&
+          ids.some(
+            (id) =>
+              !ctx.server.environments.client.moduleGraph.getModuleById(id)
+          )
+        ) {
           ctx.server.environments.client.hot.send("server-update", {
             ids,
           });
