@@ -122,7 +122,9 @@ async function start() {
                   __vite_server_manifest__.resolveServerReference,
               }
             ),
-        bootstrapModules: [browserViteManifest["src/entry.browser.tsx"].file],
+        bootstrapModules: [
+          `/${browserViteManifest["src/entry.browser.tsx"].file}`,
+        ],
         bootstrapScripts: [],
         bootstrapScriptContent: `
           const clientModulePromiseCache = new Map();
@@ -160,6 +162,9 @@ async function start() {
             },
           };
         `,
+        cssFiles: browserViteManifest["src/entry.browser.tsx"].css.map(
+          (f) => `/${f}`
+        ),
       });
     })
   );

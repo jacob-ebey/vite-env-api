@@ -4,6 +4,9 @@
       "react": "0.0.0-experimental-96c584661-20240412",
       "react-dom": "0.0.0-experimental-96c584661-20240412",
       "vite": "6.0.0-alpha.1"
+    },
+    "patchedDependencies": {
+      "react@0.0.0-experimental-96c584661-20240412": "patches/react@0.0.0-experimental-96c584661-20240412.patch"
     }
   }
 }

@@ -1,6 +1,7 @@
 import * as context from "./context";
 
 import { Counter } from "./client";
+import { Hero, HeroDescription, HeroTitle } from "./components/hero";
 
 export function App() {
   const url = context.getURL();
@@ -9,6 +10,7 @@ export function App() {
   return (
     <html lang="en">
       <head>
+        {/* <link rel="stylesheet" href={cssURL} /> */}
         <title>{msg}</title>
         <link
           rel="apple-touch-icon"
@@ -85,10 +87,13 @@ export function App() {
         <meta name="theme-color" content="#ffffff" />
       </head>
       <body>
-        <h1>{msg}</h1>
-        <p>
-          URL: <code>{url.href}</code>
-        </p>
+        <div className="bg-primary text-primary-content py-4 px-4">
+          <h1 className="text-3xl font-bold">vite-rsc</h1>
+        </div>
+        <Hero>
+          <HeroTitle>{msg}</HeroTitle>
+          <HeroDescription>URL: {url.href}</HeroDescription>
+        </Hero>
         <Counter />
         {/* <form action={sayHelloAction}>
           <input name="name" />

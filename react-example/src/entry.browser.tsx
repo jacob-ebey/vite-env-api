@@ -4,6 +4,8 @@ import * as React from "react";
 import { hydrateRoot } from "react-dom/client";
 import { rscStream } from "rsc-html-stream/client";
 
+import "./app.css";
+
 hydrate();
 
 async function callServer(id: string, args: unknown[]) {

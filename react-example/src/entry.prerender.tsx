@@ -14,11 +14,13 @@ export default async function handler(
     bootstrapScripts,
     bootstrapScriptContent,
     callServer,
+    cssFiles,
   }: {
     bootstrapModules?: string[];
     bootstrapScripts?: string[];
     bootstrapScriptContent?: string;
     callServer: (request: Request) => Promise<Response>;
+    cssFiles?: string[];
   }
 ) {
   const response = await callServer(request);
@@ -34,11 +36,19 @@ export default async function handler(
     __vite_client_manifest__
   );
 
-  const pipeable = HTML.renderToPipeableStream(payload.root, {
-    bootstrapModules,
-    bootstrapScripts,
-    bootstrapScriptContent,
-  });
+  const pipeable = HTML.renderToPipeableStream(
+    <>
+      {cssFiles?.map((href) => (
+        <link rel="stylesheet" href={href} />
+      ))}
+      {payload.root}
+    </>,
+    {
+      bootstrapModules,
+      bootstrapScripts,
+      bootstrapScriptContent,
+    }
+  );
   const html = (
     stream.Readable.toWeb(
       pipeable.pipe(new stream.PassThrough())

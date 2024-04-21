@@ -119,7 +119,36 @@ function reactServerPlugin({
   clientModules: Set<string>;
   serverModules: Set<string>;
 }): Plugin {
-  let clientPlugin: Plugin;
+  const clientPlugin: Plugin = rscClientPlugin.vite({
+    include: ["**/*"],
+    transformModuleId: hash,
+    useServerRuntime: {
+      function: "createServerReference",
+      module: "react-server-dom-diy/client",
+    },
+    onModuleFound(id, type) {
+      switch (type) {
+        case "use server":
+          serverModules.add(id);
+          break;
+      }
+    },
+  }) as Plugin;
+  const prerenderPlugin: Plugin = rscClientPlugin.vite({
+    include: ["**/*"],
+    transformModuleId: hash,
+    useServerRuntime: {
+      function: "createServerReference",
+      module: "react-server-dom-diy/client",
+    },
+    onModuleFound(id, type) {
+      switch (type) {
+        case "use server":
+          serverModules.add(id);
+          break;
+      }
+    },
+  }) as Plugin;
   const serverPlugin = rscServerPlugin.vite({
     include: ["**/*"],
     transformModuleId: hash,
@@ -163,40 +192,10 @@ function reactServerPlugin({
           browserEntry = (
             env.build?.rollupOptions?.input as Record<string, string>
           )?.index;
-          clientPlugin = rscClientPlugin.vite({
-            include: ["**/*"],
-            transformModuleId: hash,
-            useServerRuntime: {
-              function: "createServerReference",
-              module: "react-server-dom-diy/client",
-            },
-            onModuleFound(id, type) {
-              switch (type) {
-                case "use server":
-                  serverModules.add(id);
-                  break;
-              }
-            },
-          }) as Plugin;
           break;
         case "ssr":
           ssr = true;
           input["_client-references"] = "virtual:client-references";
-          clientPlugin = rscClientPlugin.vite({
-            include: ["**/*"],
-            transformModuleId: hash,
-            useServerRuntime: {
-              function: "createServerReference",
-              module: "react-server-dom-diy/client",
-            },
-            onModuleFound(id, type) {
-              switch (type) {
-                case "use server":
-                  serverModules.add(id);
-                  break;
-              }
-            },
-          }) as Plugin;
           break;
         case "server":
           ssr = true;
@@ -241,6 +240,11 @@ function reactServerPlugin({
       if (this.environment?.name === "server") {
         // biome-ignore lint/complexity/noBannedTypes: bla bla bla
         return (serverPlugin.transform as Function).apply(this, args);
+      }
+
+      if (this.environment?.name === "ssr") {
+        // biome-ignore lint/complexity/noBannedTypes: bla bla bla
+        return (prerenderPlugin.transform as Function).apply(this, args);
       }
 
       // biome-ignore lint/complexity/noBannedTypes: bla bla bla
@@ -376,7 +380,7 @@ function hattipRSCDevServer({
               if (serverModulePromiseCache.has(id)) {
                 return serverModulePromiseCache.get(id) as CachedPromise<void>;
               }
-              const promise = runners.ssr
+              const promise = runners.server
                 .import(id)
                 .then((mod) => {
                   promise.status = "fulfilled";
@@ -508,33 +512,40 @@ function hattipRSCDevServer({
       };
     },
     hotUpdate(ctx) {
-      const runner = runners[ctx.environment.name as "ssr" | "server"];
+      // const runner = runners[ctx.environment.name as "ssr" | "server"];
 
-      if (runner) {
-        const ids: string[] = [];
-        for (const mod of ctx.modules) {
-          if (mod.id) {
-            ids.push(mod.id);
-            clientModulePromiseCache.delete(mod.id);
-            serverModulePromiseCache.delete(mod.id);
-          }
-        }
-        if (ids.length > 0) {
-          runner.moduleCache.invalidateDepTree(ids);
-        }
-
-        if (
-          ctx.environment.name === "server" &&
-          ids.some(
-            (id) =>
-              !ctx.server.environments.client.moduleGraph.getModuleById(id)
-          )
-        ) {
-          ctx.server.environments.client.hot.send("server-update", {
-            ids,
-          });
+      // if (runner) {
+      const ids: string[] = [];
+      const cwd = process.cwd();
+      for (const mod of ctx.modules) {
+        if (mod.id) {
+          ids.push(mod.id);
+          console.log(mod.id, clientModulePromiseCache);
+          const toDelete = `/${path.relative(cwd, mod.id)}`;
+          clientModulePromiseCache.delete(toDelete);
+          serverModulePromiseCache.delete(toDelete);
         }
       }
+      if (ids.length > 0) {
+        runners.server.moduleCache.invalidateDepTree(ids);
+        runners.ssr.moduleCache.invalidateDepTree(ids);
+      }
+
+      if (
+        (ctx.environment.name === "server" &&
+          ids.some(
+            (id) =>
+              !!ctx.server.environments.client.moduleGraph.getModuleById(id)
+          )) ||
+        ids.some(
+          (id) => !!ctx.server.environments.ssr.moduleGraph.getModuleById(id)
+        )
+      ) {
+        ctx.server.environments.client.hot.send("server-update", {
+          ids,
+        });
+      }
+      // }
     },
   };
 }
