@@ -114,26 +114,19 @@ async function start() {
           /**
            * @param {Request} request
            */
-          (request) =>
-            serverHandler(
-              { ...c, request },
-              {
-                resolveServerReference:
-                  __vite_server_manifest__.resolveServerReference,
-              }
-            ),
+          (request) => serverHandler({ ...c, request }),
         bootstrapModules: [
           `/${browserViteManifest["src/entry.browser.tsx"].file}`,
         ],
         bootstrapScripts: [],
         bootstrapScriptContent: `
-          const clientModulePromiseCache = new Map();
           window.__vite_client_manifest__ = {
+            _cache: new Map(),
             resolveClientReference([id, exportName]) {
               return {
                 preloadModule() {
-                  if (clientModulePromiseCache.has(id)) {
-                    return clientModulePromiseCache.get(id);
+                  if (window.__vite_client_manifest__._cache.has(id)) {
+                    return window.__vite_client_manifest__._cache.get(id);
                   }
                   const promise = import("/"+${JSON.stringify(
                     browserViteManifest["virtual:client-references"].file
@@ -149,11 +142,11 @@ async function start() {
                       throw res;
                     });
                   promise.status = "pending";
-                  clientModulePromiseCache.set(id, promise);
+                  window.__vite_client_manifest__._cache.set(id, promise);
                   return promise;
                 },
                 requireModule() {
-                  const cached = clientModulePromiseCache.get(id);
+                  const cached = window.__vite_client_manifest__._cache.get(id);
                   if (!cached) throw new Error(\`Module \${id} not found\`);
                   if (cached.reason) throw cached.reason;
                   return cached.value[exportName];

@@ -1,22 +1,40 @@
 {
-  "include": ["server.js", "src", "vite.config.ts"],
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": [
-      "node",
-      "react/experimental",
-      "react-dom/experimental",
-      "vite/client"
-    ],
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "checkJs": true,
-    "allowJs": true,
-    "noEmit": true
-  }
+	"include": [
+		"postcss.config.cjs",
+		"server.js",
+		"tailwind.config.cjs",
+		"vite.config.ts",
+		"src/**/*.ts",
+		"src/**/*.tsx"
+	],
+	"exclude": ["node_modules/**/*", "dist/**/*"],
+	"compilerOptions": {
+		"paths": {
+			"framework": ["./src/framework/server.ts"],
+			"framework/client": ["./src/framework/client.tsx"],
+			"framework/router/browser": ["./src/framework/router/browser.tsx"],
+			"framework/router/prerender": ["./src/framework/router/prerender.tsx"],
+			"framework/router/server": ["./src/framework/router/server.tsx"],
+			"framework/shared": ["./src/framework/shared.tsx"]
+		},
+		"types": [
+			"node",
+			"react/experimental",
+			"react-dom/canary",
+			"react-dom/experimental",
+			"vite/client"
+		],
+		"target": "ES2022",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "Node",
+		"allowSyntheticDefaultImports": true,
+		"resolveJsonModule": true,
+		"jsx": "react-jsx",
+		"strict": true,
+		"allowJs": true,
+		"checkJs": false,
+		"skipLibCheck": true,
+		"noEmit": true
+	}
 }

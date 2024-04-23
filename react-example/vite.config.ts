@@ -7,7 +7,11 @@ import {
   createNodeDevEnvironment,
   createServerModuleRunner,
   defineConfig,
+  loadEnv,
 } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+
+import packageJSON from "./package.json" assert { type: "json" };
 
 declare global {
   var clientModules: Set<string>;
@@ -22,6 +26,7 @@ declare global {
     };
   };
   var __vite_client_manifest__: {
+    _cache?: Map<string, unknown>;
     resolveClientReference([id, exportName]: [string, string]): {
       preloadModule(): Promise<void>;
       requireModule(): unknown;
@@ -58,6 +63,9 @@ export default defineConfig({
           },
         },
       },
+      resolve: {
+        noExternal: packageJSON.bundlePrerender,
+      },
     },
     server: {
       build: {
@@ -68,12 +76,22 @@ export default defineConfig({
           },
         },
       },
+      dev: {
+        optimizeDeps: {
+          exclude: ["@conform-to/zod"],
+        },
+      },
+      resolve: {
+        external: packageJSON.doNotBundleServer,
+      },
     },
   },
   plugins: [
+    tsconfigPaths(),
     react(),
     reactServerPlugin({ clientModules, serverModules }),
     hattipRSCDevServer({
+      createPrerenderEnvironment: createNodeDevEnvironment,
       createServerEnvironment: createNodeDevEnvironment,
     }),
   ],
@@ -339,6 +357,9 @@ function hattipRSCDevServer({
           };
       }
     },
+    config(c, env) {
+      process.env = { ...process.env, ...loadEnv(env.mode, process.cwd(), "") };
+    },
     async configureServer(server) {
       runners.ssr = createServerModuleRunner(server.environments.ssr);
       runners.server = createServerModuleRunner(server.environments.server);
@@ -450,13 +471,7 @@ function hattipRSCDevServer({
             const middleware = createMiddleware(
               (c) => {
                 const callServer = (request: Request) => {
-                  return serverMod.default(
-                    { ...c, request },
-                    {
-                      resolveServerReference:
-                        __vite_server_manifest__.resolveServerReference,
-                    }
-                  );
+                  return serverMod.default({ ...c, request });
                 };
 
                 return prerenderMod.default(c, {
@@ -465,13 +480,13 @@ function hattipRSCDevServer({
                     "/@id/virtual:browser-entry",
                   ],
                   bootstrapScriptContent: `
-                    const clientModulePromiseCache = new Map();
                     window.__vite_client_manifest__ = {
+                      _cache: new Map(),
                       resolveClientReference([id, exportName]) {
                         return {
                           preloadModule() {
-                            if (clientModulePromiseCache.has(id)) {
-                              return clientModulePromiseCache.get(id);
+                            if (window.__vite_client_manifest__._cache.has(id)) {
+                              return window.__vite_client_manifest__._cache.get(id);
                             }
                             const promise = import(id)
                               .then((mod) => {
@@ -484,11 +499,11 @@ function hattipRSCDevServer({
                                 throw res;
                               });
                             promise.status = "pending";
-                            clientModulePromiseCache.set(id, promise);
+                            window.__vite_client_manifest__._cache.set(id, promise);
                             return promise;
                           },
                           requireModule() {
-                            const cached = clientModulePromiseCache.get(id);
+                            const cached = window.__vite_client_manifest__._cache.get(id);
                             if (!cached) throw new Error(\`Module \${id} not found\`);
                             if (cached.reason) throw cached.reason;
                             return cached.value[exportName];
@@ -504,6 +519,10 @@ function hattipRSCDevServer({
                 alwaysCallNext: false,
               }
             );
+
+            if (req.originalUrl !== req.url) {
+              req.url = req.originalUrl;
+            }
             await middleware(req, res, next);
           } catch (reason) {
             next(reason);
@@ -512,23 +531,34 @@ function hattipRSCDevServer({
       };
     },
     hotUpdate(ctx) {
-      // const runner = runners[ctx.environment.name as "ssr" | "server"];
-
-      // if (runner) {
       const ids: string[] = [];
       const cwd = process.cwd();
       for (const mod of ctx.modules) {
         if (mod.id) {
           ids.push(mod.id);
-          console.log(mod.id, clientModulePromiseCache);
           const toDelete = `/${path.relative(cwd, mod.id)}`;
           clientModulePromiseCache.delete(toDelete);
           serverModulePromiseCache.delete(toDelete);
         }
       }
+
       if (ids.length > 0) {
-        runners.server.moduleCache.invalidateDepTree(ids);
-        runners.ssr.moduleCache.invalidateDepTree(ids);
+        switch (ctx.environment.name) {
+          case "server":
+            for (const id of ids) {
+              if (ctx.environment.moduleGraph.getModuleById(id)) {
+                runners.server.moduleCache.invalidateDepTree([id]);
+              }
+            }
+            break;
+          case "ssr":
+            for (const id of ids) {
+              if (ctx.environment.moduleGraph.getModuleById(id)) {
+                runners.ssr.moduleCache.invalidateDepTree([id]);
+              }
+            }
+            break;
+        }
       }
 
       if (
@@ -545,7 +575,6 @@ function hattipRSCDevServer({
           ids,
         });
       }
-      // }
     },
   };
 }
