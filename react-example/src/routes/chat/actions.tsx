@@ -1,9 +1,9 @@
 "use server";
 
-import { createOpenAI } from "@ai-sdk/openai";
+import { ChatGroq } from "@langchain/groq";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { parseWithZod } from "@conform-to/zod";
 import { createStreamableUI } from "ai/rsc";
-import * as React from "react";
 
 import * as framework from "framework";
 
@@ -12,7 +12,7 @@ import { GROQ_API_KEY } from "../../middleware/secrets/server";
 import { sendMessageSchema } from "./schema";
 import { AIMessage, PendingAIMessage, UserMessage } from "./shared";
 
-export async function sendMessage(formData: FormData, stream?: true) {
+export async function sendMessage(formData: FormData, stream = false) {
   const apiKey = framework.get(GROQ_API_KEY);
   const userId = await actionRequiresUserId();
 
@@ -22,14 +22,14 @@ export async function sendMessage(formData: FormData, stream?: true) {
 
   switch (parsed.status) {
     case "error": {
-      return { lastResult: parsed.reply() };
+      return { lastResult: parsed.reply(), stream };
     }
     case "success": {
       const { message } = parsed.value;
 
-      const groq = createOpenAI({
+      const groq = new ChatGroq({
         apiKey,
-        baseURL: "https://api.groq.com/openai/v1",
+        model: "llama3-70b-8192",
       });
 
       const aiMessage = createStreamableUI(<PendingAIMessage />);
@@ -39,39 +39,26 @@ export async function sendMessage(formData: FormData, stream?: true) {
 
       setTimeout(async () => {
         try {
-          const { stream } = await groq("llama3-70b-8192").doStream({
-            inputFormat: "messages",
-            mode: {
-              type: "regular",
-            },
-            prompt: [
-              {
-                role: "system",
-                content: "You are a helpful AI assistant.",
-              },
-              {
-                role: "user",
-                content: [{ type: "text", text: message }],
-              },
-            ],
-          });
+          const stream = await ChatPromptTemplate.fromMessages([
+            ["system", "You are a helpful AI assistant."],
+            ["human", "{message}"],
+          ])
+            .pipe(groq)
+            .stream({
+              message,
+            });
+
           let aiResponse = "";
-          await stream.pipeTo(
-            new WritableStream({
-              write(chunk) {
-                switch (chunk.type) {
-                  case "text-delta": {
-                    aiResponse += chunk.textDelta;
-                    const trimmed = aiResponse.trim();
-                    if (trimmed) {
-                      aiMessage.update(<AIMessage>{trimmed}</AIMessage>);
-                    }
-                    break;
-                  }
-                }
-              },
-            })
-          );
+          for await (const chunk of stream) {
+            if (typeof chunk.content === "string" && chunk.content) {
+              aiResponse += chunk.content;
+              const trimmed = aiResponse.trim();
+              if (trimmed) {
+                aiMessage.update(<AIMessage>{trimmed}</AIMessage>);
+              }
+            }
+          }
+
           aiMessage.done(<AIMessage>{aiResponse.trim()}</AIMessage>);
           userMessage.done();
         } catch (reason) {
@@ -82,13 +69,13 @@ export async function sendMessage(formData: FormData, stream?: true) {
               again.
             </AIMessage>
           );
-          userMessage.done(<React.Fragment />);
+          userMessage.done();
         }
       }, 1000);
 
       return {
         lastResult: parsed.reply(),
-        newMessages: [aiMessage.value, userMessage.value],
+        newMessages: [userMessage.value, aiMessage.value],
         stream,
       };
     }

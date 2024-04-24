@@ -1,5 +1,6 @@
 "use client";
 
+import type { FieldMetadata } from "@conform-to/react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import * as React from "react";
@@ -14,19 +15,20 @@ import { PendingAIMessage, UserMessage } from "./shared";
 
 type SendMessageFormProps = {
   action: typeof sendMessage;
-  initialMessages: string[];
+  children?: React.ReactNode;
   initialState?: Awaited<ReturnType<typeof sendMessage>>;
 };
 
 export function SendMessageForm({
   action,
-  initialMessages,
+  children,
   initialState,
 }: SendMessageFormProps) {
   const hydrated = useHydrated();
 
-  const [messages, setMessages] =
-    React.useState<React.ReactNode[]>(initialMessages);
+  const [clientMessages, setClientMessages] = React.useState<React.ReactNode[]>(
+    []
+  );
   const [pendingMessage, setPendingMessage] =
     React.useOptimistic<React.ReactNode | null>(null);
   const formRef = React.useRef<HTMLFormElement | null>(null);
@@ -44,37 +46,28 @@ export function SendMessageForm({
 
     if (result?.newMessages) {
       if (formState && !formState.stream && formState.newMessages) {
-        setMessages((messages) => [
+        setClientMessages((messages) => [
           ...result.newMessages,
           ...formState.newMessages,
           ...messages,
         ]);
       } else {
-        setMessages((messages) => [...result.newMessages, ...messages]);
+        setClientMessages((messages) => [...result.newMessages, ...messages]);
       }
     }
 
     return result;
   }, initialState);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  React.useLayoutEffect(() => {
-    if (!pendingMessage && hydrated) {
-      (
-        formRef.current?.elements.namedItem(message.name) as HTMLInputElement
-      )?.focus();
-    }
-  }, [pendingMessage]);
-
-  const allMessages = React.useMemo(() => {
+  const allClientMessages = React.useMemo(() => {
     if (pendingMessage) {
-      return [<PendingAIMessage />, pendingMessage, ...messages];
+      return [pendingMessage, <PendingAIMessage />, ...clientMessages];
     }
     if (formState && !formState.stream && formState.newMessages) {
-      return [...formState.newMessages, ...messages];
+      return [...formState.newMessages, ...clientMessages];
     }
-    return messages;
-  }, [formState, pendingMessage, messages]);
+    return clientMessages;
+  }, [formState, pendingMessage, clientMessages]);
 
   const [form, fields] = useForm({
     id: "send-message-form",
@@ -90,11 +83,11 @@ export function SendMessageForm({
   return (
     <div className="flex flex-col gap-6">
       <form
+        className="mb-6"
         ref={formRef}
         id={form.id}
         action={hydrated ? dispatch : action}
         noValidate={hydrated}
-        className="relative"
         onSubmit={(event) => {
           if (isPending) {
             event.preventDefault();
@@ -106,35 +99,58 @@ export function SendMessageForm({
       >
         <FormOptions revalidate={false} />
 
-        <label className="input input-bordered border-0 border-b flex items-center gap-2 w-full pr-0 focus:outline-none focus-within:outline-none">
-          <span className="sr-only">Send a message</span>
-          <input
-            type="text"
-            className="grow"
-            placeholder="Message"
-            name={message.name}
-            aria-describedby={
-              message.errors ? message.descriptionId : undefined
-            }
-            disabled={isPending}
-          />
-          <SendMessageButton />
-        </label>
-        {message.errors && (
-          <div
-            id={message.descriptionId}
-            className="text-xs text-error absolute top-full left-0 w-full mt-1"
-            role="alert"
-          >
-            {message.errors}
-          </div>
-        )}
+        <SendMessageLabel field={message}>
+          <SendMessageInput field={message} />
+        </SendMessageLabel>
       </form>
-      {allMessages.map((message, key) => (
+      {allClientMessages.map((message, key) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
         <React.Fragment key={key}>{message}</React.Fragment>
       ))}
+      {children}
     </div>
+  );
+}
+
+function SendMessageLabel({
+  children,
+  field,
+}: {
+  children: React.ReactNode;
+  field: FieldMetadata;
+}) {
+  return (
+    <div className="relative">
+      <label className="input input-bordered border-0 border-b flex items-center gap-2 w-full pr-0 focus:outline-none focus-within:outline-none">
+        <span className="sr-only">Send a message</span>
+        {children}
+        <SendMessageButton />
+      </label>
+      {field.errors && (
+        <div
+          id={field.descriptionId}
+          className="text-xs text-error absolute top-full left-0 w-full mt-1"
+          role="alert"
+        >
+          {field.errors}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SendMessageInput({ field }: { field: FieldMetadata }) {
+  const form = ReactDOM.useFormStatus();
+
+  return (
+    <input
+      type="text"
+      className="grow"
+      placeholder="Message"
+      name={field.name}
+      aria-describedby={field.errors ? field.descriptionId : undefined}
+      disabled={form.pending}
+    />
   );
 }
 

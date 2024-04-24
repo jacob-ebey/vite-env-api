@@ -14,7 +14,7 @@ export default async function ShellRoute({
   const loggedIn = !!framework.get(USER_ID_KEY);
 
   return (
-    <html lang="en">
+    <html lang="en" className="bg-neutral h-screen overflow-hidden">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,7 +23,7 @@ export default async function ShellRoute({
         <Favicons />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className="flex flex-col max-h-screen h-screen bg-base text-base-content overflow-y-auto">
+      <body className="flex flex-col h-screen bg-base-100 text-base-content overflow-y-auto">
         <PendingIndicator />
         <Header loggedIn={loggedIn} />
         {children}

@@ -1,6 +1,7 @@
 import * as path from "node:path";
 
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import { rscClientPlugin, rscServerPlugin } from "unplugin-rsc";
 import type { DevEnvironment, Plugin, UserConfig, ViteDevServer } from "vite";
 import {
@@ -51,6 +52,11 @@ export default defineConfig({
           input: {
             index: "/src/entry.browser.tsx",
           },
+          plugins: [
+            visualizer({
+              template: "flamegraph",
+            }),
+          ],
         },
       },
     },

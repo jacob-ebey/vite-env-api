@@ -3,11 +3,7 @@ export function UserMessage({ children }: { children: string | string[] }) {
 }
 
 export function AIMessage({ children }: { children: string | string[] }) {
-  return (
-    <pre>
-      <code className="whitespace-pre-wrap">{children}</code>
-    </pre>
-  );
+  return <div>{children}</div>;
 }
 
 export function PendingAIMessage() {
@@ -18,4 +14,8 @@ export function PendingAIMessage() {
       </span>
     </div>
   );
+}
+
+export function RetryMessage({ children }: { children: string | string[] }) {
+  return <div className="text-3xl text-error">{children}</div>;
 }
