@@ -42,7 +42,7 @@ export default async function ChatRoute() {
 
   return (
     <div className="pt-12 pb-24">
-      <div className="max-w-2xl w-full mx-auto px-4">
+      <div className="w-full max-w-2xl px-4 mx-auto">
         <SendMessageForm
           key={chatId}
           chatId={chatId}

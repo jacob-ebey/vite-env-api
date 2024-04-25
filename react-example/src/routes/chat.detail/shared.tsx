@@ -28,7 +28,7 @@ export function PendingAIMessage() {
 
 export function RetryMessage({ children }: { children: string | string[] }) {
   return (
-    <div className="text-3xl text-error">
+    <div className="prose max-w-full border-l border-error pl-4 text-error">
       <MarkdownRenderer>{children}</MarkdownRenderer>
     </div>
   );

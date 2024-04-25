@@ -584,18 +584,15 @@ function hattipRSCDevServer({
       }
 
       if (
-        (ctx.environment.name === "server" &&
-          ids.some(
-            (id) =>
-              !!ctx.server.environments.client.moduleGraph.getModuleById(id)
-          )) ||
+        ctx.environment.name === "client" &&
         ids.some(
-          (id) => !!ctx.server.environments.ssr.moduleGraph.getModuleById(id)
+          (id) => !!ctx.server.environments.server.moduleGraph.getModuleById(id)
         )
       ) {
-        ctx.server.environments.client.hot.send("server-update", {
+        ctx.environment.hot.send("react-server:update", {
           ids,
         });
+        return [];
       }
     },
   };

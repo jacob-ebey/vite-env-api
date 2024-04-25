@@ -15,8 +15,14 @@ import { getDB } from "@/db/server";
 import { actionRequiresUserId } from "@/user/server";
 import { Secrets } from "@/secrets/server";
 
+import { FocusSendMessageForm } from "./client";
 import { sendMessageSchema } from "./schema";
-import { AIMessage, PendingAIMessage, UserMessage } from "./shared";
+import {
+  AIMessage,
+  PendingAIMessage,
+  RetryMessage,
+  UserMessage,
+} from "./shared";
 
 export async function sendMessage(formData: FormData, stream = false) {
   const apiKey = framework.get(Secrets.GROQ_API_KEY);
@@ -39,7 +45,7 @@ export async function sendMessage(formData: FormData, stream = false) {
       const existingDBChat = chatId
         ? await db.query.chat.findFirst({
             where: and(eq(chat.id, chatId), eq(chat.userId, userId)),
-            columns: { id: true },
+            columns: { id: true, name: true },
             with: {
               messages: {
                 orderBy(fields, operators) {
@@ -55,32 +61,18 @@ export async function sendMessage(formData: FormData, stream = false) {
           })
         : undefined;
 
-      let dbChat:
-        | undefined
-        | ({ id: string } & Partial<typeof existingDBChat>) = existingDBChat;
-
-      if (!dbChat) {
-        dbChat = (
-          await db
-            .insert(chat)
-            .values({
-              name: "New Chat",
-              userId,
-            })
-            .returning({ id: chat.id })
-        )[0];
-      }
-
-      if (!dbChat) {
+      if (chatId && !existingDBChat) {
         return {
           lastResult: parsed.reply({
-            fieldErrors: { message: ["Could not find or create chat."] },
+            fieldErrors: {
+              message: ["Chat not found."],
+            },
             resetForm: false,
           }),
         };
       }
 
-      const existingMessages = dbChat.messages ?? [];
+      const existingMessages = existingDBChat?.messages ?? [];
 
       const groq = new ChatGroq({
         apiKey,
@@ -91,6 +83,28 @@ export async function sendMessage(formData: FormData, stream = false) {
       const userMessage = createStreamableUI(
         <UserMessage>{message}</UserMessage>
       );
+
+      const chatNamePromise = !existingDBChat
+        ? ChatPromptTemplate.fromMessages([
+            [
+              "system",
+              "You are a function calling AI assistant tasked with determining a short title for a new chat thread based on the first message and calling 'set_chat_name.'.",
+            ],
+            [
+              "human",
+              "Determine a short title for a chat thread with the first message of\n" +
+                "<first_message>\n{message}\n</first_message>",
+            ],
+          ])
+            .pipe(groq)
+            .invoke({ message })
+            .then((response) => {
+              const toolCall = response.tool_calls?.find(
+                (call) => call.name === "set_chat_name"
+              );
+              return (toolCall?.args?.chat_name as string) || "New Chat";
+            })
+        : existingDBChat.name;
 
       const redirectToPromise = (async () => {
         try {
@@ -120,7 +134,25 @@ export async function sendMessage(formData: FormData, stream = false) {
             }
           }
 
-          const saved = await db.transaction(async (tx) => {
+          const dbChat = await db.transaction(async (tx) => {
+            let dbChat: undefined | { id: string } = existingDBChat;
+            if (!existingDBChat) {
+              dbChat = (
+                await db
+                  .insert(chat)
+                  .values({
+                    name: await chatNamePromise,
+                    userId,
+                  })
+                  .returning({ id: chat.id })
+              )[0];
+            }
+
+            if (!dbChat) {
+              tx.rollback();
+              return null;
+            }
+
             const userMessage = await tx.insert(chatMessage).values({
               chatId: dbChat.id,
               message,
@@ -129,7 +161,7 @@ export async function sendMessage(formData: FormData, stream = false) {
             });
             if (!userMessage.changes) {
               tx.rollback();
-              return false;
+              return null;
             }
             const aiMessage = await tx.insert(chatMessage).values({
               chatId: dbChat.id,
@@ -138,12 +170,12 @@ export async function sendMessage(formData: FormData, stream = false) {
             });
             if (!aiMessage.changes) {
               tx.rollback();
-              return false;
+              return null;
             }
-            return true;
+            return dbChat;
           });
 
-          if (!saved) {
+          if (!dbChat) {
             throw new Error("Failed to save messages.");
           }
 
@@ -153,7 +185,11 @@ export async function sendMessage(formData: FormData, stream = false) {
           aiMessage.done(
             <>
               <AIMessage>{aiResponse.trim()}</AIMessage>
-              {redirectTo && <ClientRedirect to={redirectTo} />}
+              {redirectTo ? (
+                <ClientRedirect to={redirectTo} />
+              ) : (
+                <FocusSendMessageForm />
+              )}
             </>
           );
 
@@ -162,10 +198,10 @@ export async function sendMessage(formData: FormData, stream = false) {
           console.error(reason);
           userMessage.done();
           aiMessage.done(
-            <AIMessage>
+            <RetryMessage>
               Sorry, I'm having trouble processing your message. Please try
               again.
-            </AIMessage>
+            </RetryMessage>
           );
         }
       })().catch(() => undefined);

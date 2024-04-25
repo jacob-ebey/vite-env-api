@@ -39,7 +39,7 @@ export function SendMessageForm({
   const [formState, dispatch, isPending] = React.useActionState<
     ReturnType<typeof action> | undefined,
     Parameters<typeof action>[0]
-  >(async (_, formData) => {
+  >(async (formState, formData) => {
     const parsed = parseWithZod(formData, { schema: sendMessageSchema });
     if (parsed.status === "success") {
       setPendingMessage(<UserMessage>{parsed.value.message}</UserMessage>);
@@ -210,4 +210,18 @@ export function MarkdownRenderer({
       dangerouslySetInnerHTML={{ __html: parsed }}
     />
   );
+}
+
+export function FocusSendMessageForm() {
+  React.useLayoutEffect(() => {
+    const form = document.getElementById("send-message-form");
+    if (form) {
+      console.log("FOCUSING", form.querySelector("input")?.disabled);
+      setTimeout(() => {
+        form.querySelector<HTMLInputElement>("input[type=text]")?.focus();
+      }, 1);
+    }
+  }, []);
+
+  return null;
 }
