@@ -24,6 +24,32 @@ export function useHydrated() {
   );
 }
 
+export function useEnhancedActionState<
+  Action extends (formData: FormData) => unknown
+>(
+  action: Action,
+  clientAction: (
+    state: Awaited<ReturnType<Action>> | undefined,
+    formData: FormData
+  ) => ReturnType<Action> | Promise<ReturnType<Action>>,
+  initialState?: Awaited<ReturnType<Action>> | undefined,
+  permalink?: string
+): [
+  state: Awaited<ReturnType<Action>> | undefined,
+  dispatch: Action | ((formData: FormData) => void),
+  isPending: boolean
+] {
+  const [state, dispatch, pending] = React.useActionState<
+    ReturnType<Action> | undefined,
+    FormData
+  >(clientAction, initialState, permalink);
+  const hydrated = useHydrated();
+  if (hydrated) {
+    return [state, dispatch, pending] as const;
+  }
+  return [state, action, pending] as const;
+}
+
 export function redirect(to: string) {
   return __startNavigation(to, async (completeNavigation, aborted) => {
     const payload = await navigate(to);

@@ -161,7 +161,7 @@ function reactServerPlugin({
     transformModuleId: hash,
     useServerRuntime: {
       function: "createServerReference",
-      module: "react-server-dom-diy/client",
+      module: "framework/runtime.client",
     },
     onModuleFound(id, type) {
       switch (type) {
@@ -176,7 +176,7 @@ function reactServerPlugin({
     transformModuleId: hash,
     useServerRuntime: {
       function: "createServerReference",
-      module: "react-server-dom-diy/client",
+      module: "framework/runtime.client",
     },
     onModuleFound(id, type) {
       switch (type) {

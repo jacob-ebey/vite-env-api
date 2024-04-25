@@ -36,11 +36,12 @@ export async function renderServerResponse(
   )) as ServerPayload;
 
   if (payload.redirect) {
+    const responseHeaders = new Headers(response.headers);
+    responseHeaders.set("Location", payload.redirect);
+
     return new Response(payload.redirect, {
       status: 302,
-      headers: {
-        Location: payload.redirect,
-      },
+      headers: responseHeaders,
     });
   }
 

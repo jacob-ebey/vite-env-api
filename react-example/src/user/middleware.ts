@@ -33,18 +33,17 @@ export const parseUserIdMiddleware: MiddlewareFunction = (
   return next();
 };
 
-export const redirectIfLoggedInMiddleware: MiddlewareFunction = (
-  { get, redirect },
-  next
-) => {
-  const userId = get(USER_ID_KEY);
+export const redirectIfLoggedInMiddleware =
+  (to: string): MiddlewareFunction =>
+  ({ get, redirect }, next) => {
+    const userId = get(USER_ID_KEY);
 
-  if (userId) {
-    return redirect("/chat");
-  }
+    if (userId) {
+      return redirect("/chat");
+    }
 
-  return next();
-};
+    return next();
+  };
 
 export const requireUserIdMiddleware: MiddlewareFunction = (
   { get, redirect },

@@ -1,14 +1,15 @@
 "use client";
 
 import type { FieldMetadata } from "@conform-to/react";
-import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as markdown from "tiny-markdown-parser";
 
-import { useHydrated } from "framework/client";
+import { useEnhancedActionState, useHydrated } from "framework/client";
 import { FormOptions } from "framework/shared";
+
+import { useForm } from "@/forms/client";
 
 import type { sendMessage } from "./actions";
 import { sendMessageSchema } from "./schema";
@@ -27,8 +28,6 @@ export function SendMessageForm({
   children,
   initialState,
 }: SendMessageFormProps) {
-  const hydrated = useHydrated();
-
   const [clientMessages, setClientMessages] = React.useState<React.ReactNode[]>(
     []
   );
@@ -36,35 +35,40 @@ export function SendMessageForm({
     React.useOptimistic<React.ReactNode | null>(null);
   const formRef = React.useRef<HTMLFormElement | null>(null);
 
-  const [formState, dispatch, isPending] = React.useActionState<
-    ReturnType<typeof action> | undefined,
-    Parameters<typeof action>[0]
-  >(async (formState, formData) => {
-    const parsed = parseWithZod(formData, { schema: sendMessageSchema });
-    if (parsed.status === "success") {
-      setPendingMessage(<UserMessage>{parsed.value.message}</UserMessage>);
-    }
-
-    const result = await action(formData, true);
-
-    if (result?.newMessages) {
-      if (formState && !formState.stream && formState.newMessages) {
-        setClientMessages((messages) => [
-          ...result.newMessages,
-          ...formState.newMessages,
-          ...messages,
-        ]);
-      } else {
-        setClientMessages((messages) => [...result.newMessages, ...messages]);
+  const [formState, dispatch, isPending] = useEnhancedActionState(
+    action,
+    async (formState, formData) => {
+      const parsed = parseWithZod(formData, { schema: sendMessageSchema });
+      if (parsed.status === "success") {
+        setPendingMessage(<UserMessage>{parsed.value.message}</UserMessage>);
       }
-    }
 
-    return result;
-  }, initialState);
+      const result = await action(formData, true);
+
+      if (result?.newMessages) {
+        if (formState && !formState.stream && formState.newMessages) {
+          setClientMessages((messages) => [
+            ...result.newMessages,
+            ...formState.newMessages,
+            ...messages,
+          ]);
+        } else {
+          setClientMessages((messages) => [...result.newMessages, ...messages]);
+        }
+      }
+
+      return result;
+    },
+    initialState
+  );
 
   const allClientMessages = React.useMemo(() => {
     if (pendingMessage) {
-      return [pendingMessage, <PendingAIMessage />, ...clientMessages];
+      return [
+        pendingMessage,
+        <PendingAIMessage key="pending" />,
+        ...clientMessages,
+      ];
     }
     if (formState && !formState.stream && formState.newMessages) {
       return [...formState.newMessages, ...clientMessages];
@@ -73,11 +77,9 @@ export function SendMessageForm({
   }, [formState, pendingMessage, clientMessages]);
 
   const [form, fields] = useForm({
+    schema: sendMessageSchema,
     id: "send-message-form",
     lastResult: formState?.lastResult,
-    onValidate: (context) => {
-      return parseWithZod(context.formData, { schema: sendMessageSchema });
-    },
     shouldValidate: "onSubmit",
   });
 
@@ -86,11 +88,11 @@ export function SendMessageForm({
   return (
     <div>
       <form
+        id={form.id}
+        noValidate={form.noValidate}
         className="mb-6"
         ref={formRef}
-        id={form.id}
-        action={hydrated ? dispatch : action}
-        noValidate={hydrated}
+        action={dispatch}
         onSubmit={(event) => {
           if (isPending) {
             event.preventDefault();
@@ -126,7 +128,7 @@ function SendMessageLabel({
 }) {
   return (
     <div className="relative">
-      <label className="input input-bordered border-0 border-b flex items-center gap-2 w-full pr-0 focus:outline-none focus-within:outline-none">
+      <label className="flex items-center w-full gap-2 pr-0 border-0 border-b input input-bordered focus:outline-none focus-within:outline-none">
         <span className="sr-only">Send a message</span>
         {children}
         <SendMessageButton />
@@ -134,7 +136,7 @@ function SendMessageLabel({
       {field.errors && (
         <div
           id={field.descriptionId}
-          className="text-xs text-error absolute top-full left-0 w-full mt-1"
+          className="absolute left-0 w-full mt-1 text-xs text-error top-full"
           role="alert"
         >
           {field.errors}
@@ -156,6 +158,7 @@ function SendMessageInput({ field }: { field: FieldMetadata<string> }) {
       defaultValue={field.value}
       aria-describedby={field.errors ? field.descriptionId : undefined}
       disabled={form.pending}
+      required
     />
   );
 }
@@ -165,7 +168,7 @@ function SendMessageButton() {
 
   if (form.pending) {
     return (
-      <div className="h-full aspect-square flex items-center justify-center">
+      <div className="flex items-center justify-center h-full aspect-square">
         <span className="loading loading-spinner loading-sm">
           <span className="sr-only">Sending message</span>
         </span>
@@ -176,7 +179,7 @@ function SendMessageButton() {
   return (
     <button
       type="submit"
-      className="h-full aspect-square flex items-center justify-center btn btn-ghost"
+      className="flex items-center justify-center h-full aspect-square btn btn-ghost"
     >
       <svg
         fill="none"
@@ -216,7 +219,6 @@ export function FocusSendMessageForm() {
   React.useLayoutEffect(() => {
     const form = document.getElementById("send-message-form");
     if (form) {
-      console.log("FOCUSING", form.querySelector("input")?.disabled);
       setTimeout(() => {
         form.querySelector<HTMLInputElement>("input[type=text]")?.focus();
       }, 1);

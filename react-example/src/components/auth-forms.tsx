@@ -1,16 +1,13 @@
 "use client";
 
 import type { FieldMetadata } from "@conform-to/react";
-import { useForm } from "@conform-to/react";
-import { parseWithZod } from "@conform-to/zod";
 import cn from "clsx";
-import * as React from "react";
 import * as ReactDOM from "react-dom";
 
-import { useHydrated } from "framework/client";
-
+import { useForm } from "@/forms/client";
 import type { login, signup } from "@/user/actions";
 import { loginFormSchema, signupFormSchema } from "@/user/schema";
+import { useNavigation } from "@/framework/client";
 
 type LoginFormProps = {
   action: typeof login;
@@ -18,20 +15,11 @@ type LoginFormProps = {
 };
 
 export function LoginForm({ action, initialState }: LoginFormProps) {
-  const hydrated = useHydrated();
-  const [lastResult, dispatch, isPending] = React.useActionState<
-    ReturnType<typeof login> | undefined,
-    FormData
-  >(async (_, formData) => {
-    return await action(formData);
-  }, initialState);
-
+  const { pending } = useNavigation();
   const [form, fields] = useForm({
     id: "login-form",
-    lastResult,
-    onValidate: (context) => {
-      return parseWithZod(context.formData, { schema: loginFormSchema });
-    },
+    lastResult: initialState,
+    schema: loginFormSchema,
     shouldValidate: "onBlur",
   });
 
@@ -40,11 +28,11 @@ export function LoginForm({ action, initialState }: LoginFormProps) {
   return (
     <form
       id={form.id}
-      action={hydrated ? dispatch : action}
-      noValidate={hydrated}
-      className="mt-4 flex flex-col gap-4"
+      noValidate={form.noValidate}
+      action={action}
+      className="flex flex-col gap-4 mt-4"
       onSubmit={(event) => {
-        if (isPending) {
+        if (pending) {
           event.preventDefault();
           return;
         }
@@ -58,6 +46,7 @@ export function LoginForm({ action, initialState }: LoginFormProps) {
           type="email"
           placeholder="Email"
           autoComplete="current-email"
+          required
         />
       </InputLabel>
 
@@ -68,6 +57,7 @@ export function LoginForm({ action, initialState }: LoginFormProps) {
           type="password"
           placeholder="Password"
           autoComplete="current-password"
+          required
         />
       </InputLabel>
 
@@ -82,20 +72,12 @@ type SignupFormProps = {
 };
 
 export function SignupForm({ action, initialState }: SignupFormProps) {
-  const hydrated = useHydrated();
-  const [lastResult, dispatch, isPending] = React.useActionState<
-    ReturnType<typeof signup> | undefined,
-    FormData
-  >(async (_, formData) => {
-    return await action(formData);
-  }, initialState);
+  const { pending } = useNavigation();
 
   const [form, fields] = useForm({
     id: "signup-form",
-    lastResult,
-    onValidate: (context) => {
-      return parseWithZod(context.formData, { schema: signupFormSchema });
-    },
+    lastResult: initialState,
+    schema: signupFormSchema,
     shouldValidate: "onBlur",
   });
 
@@ -110,11 +92,11 @@ export function SignupForm({ action, initialState }: SignupFormProps) {
   return (
     <form
       id={form.id}
-      action={hydrated ? dispatch : action}
-      noValidate={hydrated}
-      className="mt-4 flex flex-col gap-4"
+      noValidate={form.noValidate}
+      action={action}
+      className="flex flex-col gap-4 mt-4"
       onSubmit={(event) => {
-        if (isPending) {
+        if (pending) {
           event.preventDefault();
           return;
         }
@@ -128,6 +110,7 @@ export function SignupForm({ action, initialState }: SignupFormProps) {
           type="email"
           placeholder="Email"
           autoComplete="current-email"
+          required
         />
       </InputLabel>
 
@@ -148,6 +131,7 @@ export function SignupForm({ action, initialState }: SignupFormProps) {
           type="password"
           placeholder="Verify Password"
           autoComplete="new-password"
+          required
         />
       </InputLabel>
 
@@ -158,6 +142,7 @@ export function SignupForm({ action, initialState }: SignupFormProps) {
           type="text"
           placeholder="Display Name"
           autoComplete="nickname"
+          required
         />
       </InputLabel>
 
@@ -168,6 +153,7 @@ export function SignupForm({ action, initialState }: SignupFormProps) {
           type="text"
           placeholder="Full Name"
           autoComplete="name"
+          required
         />
       </InputLabel>
 

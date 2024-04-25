@@ -206,7 +206,7 @@ export async function sendMessage(formData: FormData, stream = false) {
         }
       })().catch(() => undefined);
 
-      if (!stream) {
+      if (!stream && !existingDBChat) {
         const redirectTo = await redirectToPromise;
         if (redirectTo) {
           return framework.actionRedirects(redirectTo);

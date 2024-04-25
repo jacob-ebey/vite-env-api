@@ -17,6 +17,7 @@
 			"framework/router/browser": ["./src/framework/router/browser.tsx"],
 			"framework/router/prerender": ["./src/framework/router/prerender.tsx"],
 			"framework/router/server": ["./src/framework/router/server.tsx"],
+			"framework/runtime.client": ["./src/framework/runtime.client.ts"],
 			"framework/shared": ["./src/framework/shared.tsx"]
 		},
 		"types": [

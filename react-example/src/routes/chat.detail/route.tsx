@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import * as React from "react";
 import { URLPattern } from "urlpattern-polyfill";
 
 import * as framework from "framework";
@@ -49,13 +50,15 @@ export default async function ChatRoute() {
           action={sendMessage}
           initialState={sendMessageAction.result}
         >
-          {initialChat?.messages.map((message) =>
-            message.userId ? (
-              <UserMessage>{message.message}</UserMessage>
-            ) : (
-              <AIMessage>{message.message}</AIMessage>
-            )
-          )}
+          {initialChat?.messages.map((message) => (
+            <React.Fragment key={message.id}>
+              {message.userId ? (
+                <UserMessage key={message.id}>{message.message}</UserMessage>
+              ) : (
+                <AIMessage key={message.id}>{message.message}</AIMessage>
+              )}
+            </React.Fragment>
+          ))}
         </SendMessageForm>
       </div>
     </div>

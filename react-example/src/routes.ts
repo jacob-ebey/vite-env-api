@@ -21,7 +21,7 @@ export const routes = createRoutes([
       {
         id: "login",
         index: true,
-        middleware: [redirectIfLoggedInMiddleware],
+        middleware: [redirectIfLoggedInMiddleware("/chat")],
         import: () => import("./routes/login/route"),
       },
       {

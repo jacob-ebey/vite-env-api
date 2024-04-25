@@ -18,6 +18,7 @@ type StartNavigation = (
 
 declare global {
   var __startNavigation: StartNavigation;
+  var __callServer: typeof callServer;
 }
 
 export type Navigation =
@@ -105,6 +106,10 @@ async function callServer(id: string, args: unknown[]) {
 
   const payload = await payloadPromise;
   return payload.returnValue;
+}
+
+if (typeof document !== "undefined") {
+  window.__callServer = callServer;
 }
 
 export async function navigate(to: string): Promise<ServerPayload> {
