@@ -8,14 +8,19 @@ import { injectRSCPayload } from "rsc-html-stream/server";
 import { RenderRoute, RouteProvider } from "./client";
 import type { ServerPayload } from "./server";
 
+export const REDIRECT_SYMBOL = Symbol("context.redirect");
+
 export async function renderServerResponse(
   response: Response,
   {
-    headers,
+    requestHeaders: headers,
     renderToReadableStream,
   }: {
-    headers: Headers;
-    renderToReadableStream: (node: React.ReactNode) => ReadableStream;
+    requestHeaders: Headers;
+    renderToReadableStream: (
+      node: React.ReactNode,
+      headers: Headers
+    ) => Promise<ReadableStream>;
   }
 ) {
   if (!response.body) throw new Error("No body");
@@ -43,16 +48,23 @@ export async function renderServerResponse(
     throw new Error("No elements rendered on the server");
   }
 
-  const html = renderToReadableStream(
-    <RouteProvider rendered={payload.tree.rendered}>
-      <RenderRoute id={payload.tree.matched[0]} />
-    </RouteProvider>
+  const responseHeaders = new Headers({
+    "Content-Type": "text/html",
+    Vary: "Accept",
+  });
+  const html = (
+    await renderToReadableStream(
+      <RouteProvider
+        clientContext={payload.clientContext}
+        rendered={payload.tree.rendered}
+      >
+        <RenderRoute id={payload.tree.matched[0]} />
+      </RouteProvider>,
+      headers
+    )
   ).pipeThrough(injectRSCPayload(bodyB));
 
   return new Response(html, {
-    headers: {
-      "Content-Type": "text/html",
-      Vary: "Accept",
-    },
+    headers: responseHeaders,
   });
 }

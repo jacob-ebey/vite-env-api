@@ -5,6 +5,7 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import * as markdown from "tiny-markdown-parser";
 
 import { useHydrated } from "framework/client";
 import { FormOptions } from "framework/shared";
@@ -15,12 +16,14 @@ import { PendingAIMessage, UserMessage } from "./shared";
 
 type SendMessageFormProps = {
   action: typeof sendMessage;
+  chatId?: string;
   children?: React.ReactNode;
   initialState?: Awaited<ReturnType<typeof sendMessage>>;
 };
 
 export function SendMessageForm({
   action,
+  chatId: currentChatId,
   children,
   initialState,
 }: SendMessageFormProps) {
@@ -78,10 +81,10 @@ export function SendMessageForm({
     shouldValidate: "onSubmit",
   });
 
-  const { message } = fields;
+  const { chatId, message } = fields;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div>
       <form
         className="mb-6"
         ref={formRef}
@@ -98,6 +101,8 @@ export function SendMessageForm({
         }}
       >
         <FormOptions revalidate={false} />
+
+        <input type="hidden" name={chatId.name} value={currentChatId} />
 
         <SendMessageLabel field={message}>
           <SendMessageInput field={message} />
@@ -139,7 +144,7 @@ function SendMessageLabel({
   );
 }
 
-function SendMessageInput({ field }: { field: FieldMetadata }) {
+function SendMessageInput({ field }: { field: FieldMetadata<string> }) {
   const form = ReactDOM.useFormStatus();
 
   return (
@@ -148,6 +153,7 @@ function SendMessageInput({ field }: { field: FieldMetadata }) {
       className="grow"
       placeholder="Message"
       name={field.name}
+      defaultValue={field.value}
       aria-describedby={field.errors ? field.descriptionId : undefined}
       disabled={form.pending}
     />
@@ -187,5 +193,21 @@ function SendMessageButton() {
         />
       </svg>
     </button>
+  );
+}
+
+export function MarkdownRenderer({
+  children,
+}: {
+  children: string | string[];
+}) {
+  const content = Array.isArray(children) ? children.join("") : children;
+
+  const parsed = React.useMemo(() => markdown.parse(content), [content]);
+  return (
+    <div
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: safe enough
+      dangerouslySetInnerHTML={{ __html: parsed }}
+    />
   );
 }

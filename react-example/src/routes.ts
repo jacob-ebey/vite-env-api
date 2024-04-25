@@ -1,26 +1,39 @@
 import { createRoutes } from "framework/router/server";
 
-import { configureSecretsMiddleware } from "./middleware/secrets/server";
+import { configureDBMiddleware } from "./db/server";
+import { configureSecretsMiddleware } from "./secrets/middleware";
 import {
   parseUserIdMiddleware,
+  redirectIfLoggedInMiddleware,
   requireUserIdMiddleware,
-} from "./middleware/user/server";
+} from "./user/middleware";
 
 export const routes = createRoutes([
   {
-    id: "root",
-    middleware: [configureSecretsMiddleware, parseUserIdMiddleware],
+    id: "shell",
+    middleware: [
+      configureSecretsMiddleware,
+      configureDBMiddleware,
+      parseUserIdMiddleware,
+    ],
     import: () => import("./routes/shell/route"),
     children: [
       {
-        id: "home",
+        id: "login",
         path: "/",
         index: true,
-        import: () => import("./routes/home/route"),
+        middleware: [redirectIfLoggedInMiddleware],
+        import: () => import("./routes/login/route"),
+      },
+      {
+        id: "signup",
+        path: "/signup",
+        index: true,
+        import: () => import("./routes/signup/route"),
       },
       {
         id: "chat",
-        path: "/chat",
+        path: "/chat/:chatId?",
         middleware: [requireUserIdMiddleware],
         import: () => import("./routes/chat/route"),
       },

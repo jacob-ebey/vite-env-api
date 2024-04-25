@@ -1,19 +1,14 @@
 import * as React from "react";
 
+import type { Navigation } from "./router/browser";
+import { navigate, NavigationContext } from "./router/browser";
+export { useServerContext } from "./router/client";
+
+export type { Navigation };
+
 declare global {
   var __navigationContext: React.Context<Navigation>;
 }
-
-export type Navigation =
-  | {
-      pending: true;
-      href: string;
-    }
-  | { pending: false };
-
-export const NavigationContext = React.createContext<Navigation>({
-  pending: false,
-});
 
 export function useNavigation() {
   return React.useContext(NavigationContext);
@@ -27,4 +22,14 @@ export function useHydrated() {
     () => true,
     () => false
   );
+}
+
+export function redirect(to: string) {
+  return __startNavigation(to, async (completeNavigation, aborted) => {
+    const payload = await navigate(to);
+    if (window.location.href !== payload.url.href && !aborted()) {
+      window.history.pushState(null, "", payload.url.href);
+    }
+    completeNavigation(payload);
+  });
 }

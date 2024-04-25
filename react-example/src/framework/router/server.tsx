@@ -11,18 +11,27 @@ import { createTrie, matchTrie } from "router-trie";
 import { RenderRoute } from "./client";
 
 export type MiddlewareContext = {
-  get(
-    key: keyof ServerContext,
+  get<Key extends keyof ServerContext>(
+    key: Key,
     truthy: true
-  ): NonNullable<ServerContext[typeof key]>;
-  get(
-    key: keyof ServerContext,
+  ): NonNullable<ServerContext[Key]>;
+  get<Key extends keyof ServerContext>(
+    key: Key,
     truthy?: false
-  ): undefined | ServerContext[typeof key];
-  get(key: keyof ServerContext): undefined | ServerContext[typeof key];
+  ): undefined | ServerContext[Key];
+  get<Key extends keyof ServerContext>(
+    key: Key
+  ): undefined | ServerContext[Key];
   headers: Headers;
   redirect(to: string): never;
-  set(key: keyof ServerContext, value: ServerContext[typeof key]): void;
+  set<Key extends keyof ServerContext>(
+    key: Key,
+    value: ServerContext[Key]
+  ): void;
+  setClient<Key extends keyof ServerClientContext>(
+    key: Key,
+    value: ServerClientContext[Key]
+  ): void;
 };
 
 export type MiddlewareFunction = (
@@ -46,22 +55,32 @@ export type RouterContext = {
     actionId: string;
     returnValue: unknown;
   };
-  get(
-    key: keyof ServerContext,
+  get<Key extends keyof ServerContext>(
+    key: Key,
     truthy: true
-  ): NonNullable<ServerContext[typeof key]>;
-  get(
-    key: keyof ServerContext,
+  ): NonNullable<ServerContext[Key]>;
+  get<Key extends keyof ServerContext>(
+    key: Key,
     truthy?: false
-  ): undefined | ServerContext[typeof key];
-  get(key: keyof ServerContext): undefined | ServerContext[typeof key];
+  ): undefined | ServerContext[Key];
+  get<Key extends keyof ServerContext>(
+    key: Key
+  ): undefined | ServerContext[Key];
   redirect?: string;
   request: Request;
-  set(key: keyof ServerContext, value: ServerContext[typeof key]): void;
+  set<Key extends keyof ServerContext>(
+    key: Key,
+    value: ServerContext[Key]
+  ): void;
+  setClient<Key extends keyof ServerClientContext>(
+    key: Key,
+    value: ServerClientContext[Key]
+  ): void;
   setHeaders: Headers;
 };
 
 export type ServerPayload = {
+  clientContext?: Record<string, unknown>;
   formState?: ReactFormState;
   redirect?: string;
   returnValue?: unknown;
@@ -107,6 +126,9 @@ export async function runRoutes(
   const contextValues: Partial<
     Record<keyof ServerContext, ServerContext[keyof ServerContext]>
   > = {};
+  const clientContextValues: Partial<
+    Record<keyof ServerContext, ServerContext[keyof ServerContext]>
+  > = {};
   const context: RouterContext = {
     get(key, truthy = false) {
       const value = contextValues[key];
@@ -118,6 +140,9 @@ export async function runRoutes(
     request,
     set(key, value) {
       contextValues[key] = value;
+    },
+    setClient(key, value) {
+      clientContextValues[key] = value;
     },
     setHeaders: new Headers(),
   };
@@ -171,6 +196,9 @@ export async function runRoutes(
     },
     set(key, value) {
       contextValues[key] = value;
+    },
+    setClient(key, value) {
+      clientContextValues[key] = value;
     },
   };
   let runMiddleware = () => Promise.resolve();
@@ -284,8 +312,11 @@ export async function runRoutes(
         lastId = match.id;
       }
     }
-
     toRender.tree = { matched, rendered };
+  }
+
+  if (!context.redirect) {
+    toRender.clientContext = clientContextValues;
   }
 
   const pipeable = runWithContext(context, () =>

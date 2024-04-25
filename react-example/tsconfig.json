@@ -1,8 +1,9 @@
 {
 	"include": [
+		"drizzle.config.ts",
 		"postcss.config.cjs",
 		"server.js",
-		"tailwind.config.cjs",
+		"tailwind.config.js",
 		"vite.config.ts",
 		"src/**/*.ts",
 		"src/**/*.tsx"
@@ -10,6 +11,7 @@
 	"exclude": ["node_modules/**/*", "dist/**/*"],
 	"compilerOptions": {
 		"paths": {
+			"@/*": ["./src/*"],
 			"framework": ["./src/framework/server.ts"],
 			"framework/client": ["./src/framework/client.tsx"],
 			"framework/router/browser": ["./src/framework/router/browser.tsx"],

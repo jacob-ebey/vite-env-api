@@ -5,8 +5,10 @@ import type { RouterContext } from "./router/server";
 import { REDIRECT_SYMBOL } from "./router/server";
 
 declare global {
-  // biome-ignore lint/suspicious/noEmptyInterface: <explanation>
+  // biome-ignore lint/suspicious/noEmptyInterface: used for declaration merging
   interface ServerContext {}
+  // biome-ignore lint/suspicious/noEmptyInterface: used for declaration merging
+  interface ServerClientContext {}
 }
 
 declare global {
@@ -22,17 +24,17 @@ export function runWithContext<R>(context: RouterContext, fn: () => R) {
   return asyncLocalStorage.run(context, fn);
 }
 
-export function get(
-  key: keyof ServerContext,
+export function get<Key extends keyof ServerContext>(
+  key: Key,
   truthy: true
-): NonNullable<ServerContext[typeof key]>;
-export function get(
-  key: keyof ServerContext,
+): NonNullable<ServerContext[Key]>;
+export function get<Key extends keyof ServerContext>(
+  key: Key,
   truthy?: false
-): undefined | ServerContext[typeof key];
-export function get(
-  key: keyof ServerContext
-): undefined | ServerContext[typeof key] {
+): undefined | ServerContext[Key];
+export function get<Key extends keyof ServerContext>(
+  key: Key
+): undefined | ServerContext[Key] {
   // biome-ignore lint/style/noArguments: <explanation>
   const truthy = arguments.length === 2 ? arguments[1] : false;
   const context = asyncLocalStorage.getStore();
@@ -41,13 +43,22 @@ export function get(
   return context.get(key, truthy);
 }
 
-export function set(
-  key: keyof ServerContext,
-  value: ServerContext[typeof key]
+export function set<Key extends keyof ServerContext>(
+  key: Key,
+  value: ServerContext[Key]
 ) {
   const context = asyncLocalStorage.getStore();
   if (!context) throw new Error("No context");
   context.set(key, value);
+}
+
+export function setClient<Key extends keyof ServerClientContext>(
+  key: Key,
+  value: ServerClientContext[Key]
+) {
+  const context = asyncLocalStorage.getStore();
+  if (!context) throw new Error("No context");
+  context.setClient(key, value);
 }
 
 export function getAction<T>(
@@ -75,7 +86,7 @@ export function getSetHeaders(): Headers {
   return context.setHeaders;
 }
 
-export function redirect(to: string): never {
+export function actionRedirects(to: string): never {
   const context = asyncLocalStorage.getStore();
   if (!context) throw new Error("No context");
 

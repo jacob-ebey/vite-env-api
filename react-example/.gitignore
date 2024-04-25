@@ -1,5 +1,6 @@
 .DS_Store
+.database
 .env
+.stats/
 dist/
 node_modules/
-stats.html

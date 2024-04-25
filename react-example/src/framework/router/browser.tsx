@@ -1,18 +1,14 @@
 import * as React from "react";
 // @ts-expect-error - no types
 import ReactServerDOM from "react-server-dom-diy/client";
-import { rscStream } from "rsc-html-stream/client";
 
-import type { ServerPayload } from "framework/router/server";
-import type { Navigation } from "framework/client";
-import { NavigationContext } from "framework/client";
+import { setGlobal } from "../shared";
+
+import type { ServerPayload } from "./server";
 
 import { RenderRoute, RouteProvider } from "./client";
 
-// let navigationId = 0;
-// let setPayloadURL: (url: { href: string }) => void;
-// let updatePayload: (payload: ServerPayload) => void;
-let startNavigation: (
+type StartNavigation = (
   location: string,
   callback: (
     completeNavigation: (payload: ServerPayload) => void,
@@ -20,7 +16,28 @@ let startNavigation: (
   ) => Promise<void>
 ) => Promise<void>;
 
-export function getInitialPayload() {
+declare global {
+  var __startNavigation: StartNavigation;
+}
+
+export type Navigation =
+  | {
+      pending: true;
+      href: string;
+    }
+  | { pending: false };
+
+export const NavigationContext = React.createContext<Navigation>({
+  pending: false,
+});
+
+// let navigationId = 0;
+// let setPayloadURL: (url: { href: string }) => void;
+// let updatePayload: (payload: ServerPayload) => void;
+let startNavigation: StartNavigation;
+
+export async function getInitialPayload() {
+  const { rscStream } = await import("rsc-html-stream/client");
   return ReactServerDOM.createFromReadableStream(rscStream, {
     ...__vite_client_manifest__,
     callServer,
@@ -90,7 +107,7 @@ async function callServer(id: string, args: unknown[]) {
   return payload.returnValue;
 }
 
-async function navigate(to: string): Promise<ServerPayload> {
+export async function navigate(to: string): Promise<ServerPayload> {
   const url = new URL(to, window.location.href);
   const responsePromise = fetch(url, {
     headers: {
@@ -130,7 +147,7 @@ export function BrowserRouter({
   });
   const deferredState = React.useDeferredValue(state);
 
-  startNavigation = React.useCallback<typeof startNavigation>(
+  startNavigation = React.useCallback<StartNavigation>(
     async (location, callback) => {
       navigationStateRef.current.id++;
       const id = navigationStateRef.current.id;
@@ -152,6 +169,7 @@ export function BrowserRouter({
     },
     []
   );
+  setGlobal("__startNavigation", startNavigation);
 
   const navigation: Navigation =
     pendingState && pendingState.id > state.id
@@ -232,7 +250,10 @@ export function BrowserRouter({
 
   return (
     <NavigationContext.Provider value={navigation}>
-      <RouteProvider rendered={state.payload.tree.rendered}>
+      <RouteProvider
+        clientContext={state.payload.clientContext}
+        rendered={state.payload.tree.rendered}
+      >
         <RenderRoute id={state.payload.tree.matched[0]} />
       </RouteProvider>
     </NavigationContext.Provider>

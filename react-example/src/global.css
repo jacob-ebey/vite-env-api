@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.btn {
+  animation: none !important;
+  transition-property: none !important;
+}
+
+.btn:hover,
+.btn:focus,
+.btn:active {
+  animation: button-pop var(--animation-btn, 0.25s) ease-out !important;
+  transition-property: color, background-color, border-color, opacity,
+    box-shadow, transform !important;
+}

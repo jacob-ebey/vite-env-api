@@ -1,7 +1,3 @@
-import * as framework from "framework";
-
-import { USER_ID_KEY } from "../../middleware/user/server";
-
 import { Favicons } from "./favicons";
 import { Header } from "./header";
 import { PendingIndicator } from "./pending-indicator";
@@ -11,8 +7,6 @@ export default async function ShellRoute({
 }: {
   children?: React.ReactNode;
 }) {
-  const loggedIn = !!framework.get(USER_ID_KEY);
-
   return (
     <html lang="en" className="bg-neutral h-screen overflow-hidden">
       <head>
@@ -25,7 +19,7 @@ export default async function ShellRoute({
       </head>
       <body className="flex flex-col h-screen bg-base-100 text-base-content overflow-y-auto">
         <PendingIndicator />
-        <Header loggedIn={loggedIn} />
+        <Header />
         {children}
       </body>
     </html>

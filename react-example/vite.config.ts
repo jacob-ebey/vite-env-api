@@ -55,6 +55,7 @@ export default defineConfig({
           plugins: [
             visualizer({
               template: "flamegraph",
+              filename: ".stats/client.html",
             }),
           ],
         },
@@ -67,6 +68,12 @@ export default defineConfig({
           input: {
             index: "/src/entry.prerender.tsx",
           },
+          plugins: [
+            visualizer({
+              template: "flamegraph",
+              filename: ".stats/ssr.html",
+            }),
+          ],
         },
       },
       resolve: {
@@ -80,6 +87,12 @@ export default defineConfig({
           input: {
             index: "/src/entry.server.tsx",
           },
+          plugins: [
+            visualizer({
+              template: "flamegraph",
+              filename: ".stats/server.html",
+            }),
+          ],
         },
       },
       dev: {
@@ -220,6 +233,9 @@ function reactServerPlugin({
         case "ssr":
           ssr = true;
           input["_client-references"] = "virtual:client-references";
+          resolve = {
+            noExternal: ["react-server-dom-diy/client"],
+          };
           break;
         case "server":
           ssr = true;

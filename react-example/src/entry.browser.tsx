@@ -29,9 +29,13 @@ async function hydrate() {
         {
           formState: payload.formState,
           onRecoverableError(error, errorInfo) {
-            // if (import.meta.env.PROD) {
-              console.error(error, errorInfo);
-            // }
+            console.error("RECOVERABLE ERROR", error, errorInfo);
+          },
+          onCaughtError(error, errorInfo) {
+            console.error("CAUGHT ERROR", error, errorInfo);
+          },
+          onUncaughtError(error, errorInfo) {
+            console.error("UNCAUGHT ERROR", error, errorInfo);
           },
         }
       );

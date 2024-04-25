@@ -3,19 +3,20 @@ import type {
   MiddlewareFunction,
 } from "framework/router/server";
 
-export const COOKIE_SECRET = "COOKIE_SECRET" as const;
-export const GROQ_API_KEY = "GROQ_API_KEY" as const;
+import { Secrets } from "./server";
 
 declare global {
   interface ServerContext {
-    [COOKIE_SECRET]?: string;
-    [GROQ_API_KEY]?: string;
+    [Secrets.COOKIE_SECRET]?: string;
+    [Secrets.DB_PATH]?: string;
+    [Secrets.GROQ_API_KEY]?: string;
   }
 }
 
 export const configureSecretsMiddleware: MiddlewareFunction = (c, next) => {
-  configureSecret(c, COOKIE_SECRET);
-  configureSecret(c, GROQ_API_KEY, false);
+  configureSecret(c, Secrets.COOKIE_SECRET);
+  configureSecret(c, Secrets.DB_PATH, import.meta.env.PROD);
+  configureSecret(c, Secrets.GROQ_API_KEY, false);
 
   return next();
 };
@@ -23,7 +24,7 @@ export const configureSecretsMiddleware: MiddlewareFunction = (c, next) => {
 function configureSecret(
   { get, set }: MiddlewareContext,
   key: keyof ServerContext,
-  required?: false
+  required = true
 ) {
   const existingSecret = get(key);
   if (existingSecret) return;

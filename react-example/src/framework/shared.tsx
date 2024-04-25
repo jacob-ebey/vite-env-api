@@ -18,6 +18,13 @@ export function getOrCreateGlobal<K extends keyof typeof globalThis>(
   return g[key];
 }
 
+export function setGlobal<K extends keyof typeof globalThis>(
+  key: K,
+  value: (typeof globalThis)[K]
+) {
+  g[key] = value;
+}
+
 export type FormOptionsProps = {
   revalidate?: boolean | string[];
 };

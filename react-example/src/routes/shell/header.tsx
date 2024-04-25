@@ -1,8 +1,10 @@
 import * as framework from "framework";
 
-import { logout } from "../../middleware/user/actions";
+import { logout } from "@/user/actions";
+import { getUserId } from "@/user/server";
 
-export function Header({ loggedIn }: { loggedIn: boolean }) {
+export function Header() {
+  const loggedIn = !!getUserId();
   const url = framework.getURL();
   const redirectTo = url.pathname;
 
@@ -12,10 +14,10 @@ export function Header({ loggedIn }: { loggedIn: boolean }) {
       className="navbar bg-neutral text-neutral-content"
     >
       <nav className="flex-1">
-        <a href="/" className="btn btn-ghost normal-case text-xl">
+        <a href="/" className="btn btn-ghost">
           Home
         </a>
-        <a href="/chat" className="btn btn-ghost normal-case text-xl">
+        <a href="/chat" className="btn btn-ghost">
           Chat
         </a>
       </nav>
