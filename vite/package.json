@@ -1,0 +1,35 @@
+{
+	"name": "@framework/vite",
+	"version": "0.0.0",
+	"description": "",
+	"type": "module",
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"types": "./dist/plugin.d.ts",
+	"main": "./dist/plugin.js",
+	"exports": {
+		".": {
+			"types": "./dist/plugin.d.ts",
+			"default": "./dist/plugin.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"build:watch": "tsc --watch"
+	},
+	"peerDependencies": {
+		"@vitejs/plugin-react": "4.2.1",
+		"framework": "workspace:*",
+		"react-server-dom-diy": "0.0.0-experimental-15a3a5622-202404158",
+		"vite": "6.0.0-alpha.1"
+	},
+	"dependencies": {
+		"@hattip/adapter-node": "0.0.45",
+		"unplugin-rsc": "0.0.9"
+	},
+	"devDependencies": {
+		"@types/node": "20.12.4",
+		"typescript": "5.4.4"
+	}
+}

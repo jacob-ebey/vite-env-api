@@ -6,7 +6,8 @@
 			"**/dist/**/*",
 			"**/migrations/**/*",
 			"**/node_modules/**/*",
-			"pnpm-lock.yaml"
+			"pnpm-lock.yaml",
+			"framework/src/router/trie.ts"
 		]
 	},
 	"organizeImports": {

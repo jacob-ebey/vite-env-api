@@ -1,0 +1,71 @@
+{
+	"name": "framework",
+	"version": "0.0.0",
+	"description": "",
+	"type": "module",
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"files": [
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"dist/**/*.js",
+		"dist/**/*.d.ts",
+		"dist/**/*.*.map",
+		"!**/*.test.*"
+	],
+	"exports": {
+		".": {
+			"types": "./dist/server.d.ts",
+			"source": "./src/server.ts",
+			"default": "./dist/server.js"
+		},
+		"./browser": {
+			"types": "./dist/browser.d.ts",
+			"source": "./src/browser.ts",
+			"default": "./dist/browser.js"
+		},
+		"./client": {
+			"types": "./dist/client.d.ts",
+			"source": "./src/client.tsx",
+			"default": "./dist/client.js"
+		},
+		"./prerender": {
+			"types": "./dist/prerender.d.ts",
+			"source": "./src/prerender.ts",
+			"default": "./dist/prerender.js"
+		},
+		"./runtime.client": {
+			"types": "./dist/runtime.client.d.ts",
+			"source": "./src/runtime.client.ts",
+			"default": "./dist/runtime.client.js"
+		},
+		"./shared": {
+			"types": "./dist/shared.d.ts",
+			"source": "./src/shared.tsx",
+			"default": "./dist/shared.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"build:watch": "tsc --watch",
+		"test": "node --no-warnings --enable-source-maps --conditions source --loader ts-node/esm --test ./src/*.test.*",
+		"test:watch": "node --no-warnings --enable-source-maps --conditions source --loader ts-node/esm --watch --test ./src/*.test.*"
+	},
+	"peerDependencies": {
+		"react": "0.0.0-experimental-96c584661-20240412",
+		"react-dom": "0.0.0-experimental-96c584661-20240412",
+		"react-server-dom-diy": "0.0.0-experimental-15a3a5622-202404158"
+	},
+	"dependencies": {
+		"@hattip/core": "0.0.45",
+		"rsc-html-stream": "0.0.3"
+	},
+	"devDependencies": {
+		"@types/node": "20.12.4",
+		"@types/react": "18.2.77",
+		"@types/react-dom": "18.2.25",
+		"ts-node": "10.9.2",
+		"typescript": "5.4.4"
+	}
+}

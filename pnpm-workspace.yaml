@@ -1,3 +1,4 @@
 packages:
-  - "preact-example"
-  - "react-example"
+  - "example"
+  - "framework"
+  - "vite"

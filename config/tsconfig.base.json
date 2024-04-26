@@ -1,0 +1,10 @@
+{
+	"$schema": "http://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"resolvePackageJsonImports": true,
+		"customConditions": ["source"]
+	}
+}

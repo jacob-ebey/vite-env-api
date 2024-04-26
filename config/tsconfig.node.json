@@ -1,0 +1,15 @@
+{
+	"$schema": "http://json.schemastore.org/tsconfig",
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["es2023"],
+		"target": "es2022",
+		"module": "Node16",
+		"moduleResolution": "Node16",
+		"esModuleInterop": true,
+		"skipLibCheck": true
+	},
+	"ts-node": {
+		"transpileOnly": true
+	}
+}
