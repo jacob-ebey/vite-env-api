@@ -10,6 +10,7 @@ import { RenderRoute, RouteProvider } from "./client";
 
 type StartNavigation = (
   location: string,
+  controller: AbortController,
   callback: (
     completeNavigation: (payload: ServerPayload) => void,
     aborted: () => boolean
@@ -69,7 +70,7 @@ async function callServer(id: string, args: unknown[]) {
       revalidateHeader = String(revalidate);
     }
   }
-  // const callId = ++navigationId;
+
   const href = window.location.href;
   const headers = new Headers({
     Accept: "text/x-component",
@@ -92,10 +93,11 @@ async function callServer(id: string, args: unknown[]) {
   );
 
   if (revalidateHeader !== "no") {
-    startNavigation(href, async (completeNavigation, aborted) => {
+    const controller = new AbortController();
+    startNavigation(href, controller, async (completeNavigation, aborted) => {
       let payload = await payloadPromise;
       if (payload.redirect) {
-        payload = await navigate(payload.redirect);
+        payload = await navigate(payload.redirect, controller.signal);
       }
       if (window.location.href !== payload.url.href && !aborted()) {
         window.history.pushState(null, "", payload.url.href);
@@ -112,13 +114,17 @@ if (typeof document !== "undefined") {
   window.__callServer = callServer;
 }
 
-export async function navigate(to: string): Promise<ServerPayload> {
+export async function navigate(
+  to: string,
+  signal: AbortSignal
+): Promise<ServerPayload> {
   const url = new URL(to, window.location.href);
   const responsePromise = fetch(url, {
     headers: {
       Accept: "text/x-component",
       "RSC-Refresh": "1",
     },
+    signal,
   });
 
   const payload = (await ReactServerDOM.createFromFetch(responsePromise, {
@@ -127,7 +133,7 @@ export async function navigate(to: string): Promise<ServerPayload> {
   })) as ServerPayload;
 
   if (payload.redirect) {
-    return navigate(payload.redirect);
+    return navigate(payload.redirect, signal);
   }
 
   return payload;
@@ -138,8 +144,15 @@ export function BrowserRouter({
 }: {
   initialPayload: ServerPayload;
 }) {
-  const navigationStateRef = React.useRef({
+  const navigationStateRef = React.useRef<{
+    id: number;
+    previousNavigationControllers: {
+      id: number;
+      controller: AbortController;
+    }[];
+  }>({
     id: 0,
+    previousNavigationControllers: [],
   });
   const [isPending, startTransition] = React.useTransition();
   const [pendingState, setPendingState] = React.useState<null | {
@@ -150,16 +163,32 @@ export function BrowserRouter({
     id: 0,
     payload: initialPayload,
   });
-  const deferredState = React.useDeferredValue(state);
+  // const deferredState = React.useDeferredValue(state);
 
   startNavigation = React.useCallback<StartNavigation>(
-    async (location, callback) => {
+    async (location, controller, callback) => {
       navigationStateRef.current.id++;
       const id = navigationStateRef.current.id;
+      navigationStateRef.current.previousNavigationControllers.push({
+        id,
+        controller,
+      });
+
       setPendingState({ id, location });
       await callback(
         (payload) => {
+          navigationStateRef.current.previousNavigationControllers =
+            navigationStateRef.current.previousNavigationControllers.filter(
+              (previous) => {
+                if (previous.id >= id) {
+                  return true;
+                }
+                previous.controller.abort(new Error("Navigation aborted"));
+                return false;
+              }
+            );
           if (id < navigationStateRef.current.id) {
+            controller.abort(new Error("Navigation aborted"));
             return;
           }
           startTransition(() => {
@@ -184,7 +213,7 @@ export function BrowserRouter({
         }
       : isPending
       ? {
-          href: deferredState.payload.url.href,
+          href: state.payload.url.href,
           pending: true,
         }
       : {
@@ -196,9 +225,9 @@ export function BrowserRouter({
       event.preventDefault();
 
       const to = window.location.href;
-
-      startNavigation(to, async (completeNavigation, aborted) => {
-        const payload = await navigate(to);
+      const controller = new AbortController();
+      startNavigation(to, controller, async (completeNavigation, aborted) => {
+        const payload = await navigate(to, controller.signal);
         if (window.location.href !== payload.url.href && !aborted()) {
           window.history.replaceState(null, "", payload.url.href);
         }
@@ -232,8 +261,9 @@ export function BrowserRouter({
       if (!href || href.indexOf(window.location.origin) !== 0) return;
 
       event.preventDefault();
-      startNavigation(href, async (completeNavigation, aborted) => {
-        const payload = await navigate(href);
+      const controller = new AbortController();
+      startNavigation(href, controller, async (completeNavigation, aborted) => {
+        const payload = await navigate(href, controller.signal);
         if (window.location.href !== payload.url.href && !aborted()) {
           window.history.pushState(null, "", payload.url.href);
         }
@@ -268,23 +298,29 @@ export function BrowserRouter({
 if (import.meta.hot) {
   // TODO: figure out what's causing full page reloads on server updates
   import.meta.hot.on("react-server:update", async (payload) => {
-    startNavigation(window.location.href, async (completeNavigation) => {
-      const responsePromise = fetch(window.location.href, {
-        headers: {
-          Accept: "text/x-component",
-          "RSC-Refresh": "1",
-        },
-      });
+    const controller = new AbortController();
+    startNavigation(
+      window.location.href,
+      controller,
+      async (completeNavigation) => {
+        const responsePromise = fetch(window.location.href, {
+          headers: {
+            Accept: "text/x-component",
+            "RSC-Refresh": "1",
+          },
+          signal: controller.signal,
+        });
 
-      let payload = (await ReactServerDOM.createFromFetch(responsePromise, {
-        ...__vite_client_manifest__,
-        callServer,
-      })) as ServerPayload;
-      if (payload.redirect) {
-        payload = await navigate(payload.redirect);
+        let payload = (await ReactServerDOM.createFromFetch(responsePromise, {
+          ...__vite_client_manifest__,
+          callServer,
+        })) as ServerPayload;
+        if (payload.redirect) {
+          payload = await navigate(payload.redirect, controller.signal);
+        }
+
+        completeNavigation(payload);
       }
-
-      completeNavigation(payload);
-    });
+    );
   });
 }
