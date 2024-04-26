@@ -3,11 +3,13 @@
 import { useNavigation } from "framework/client";
 
 export function PendingIndicator() {
-  const navigation = useNavigation();
+	const navigation = useNavigation();
 
-  if (!navigation.pending) {
-    return null;
-  }
+	if (!navigation.pending) {
+		return null;
+	}
 
-  return <progress className="fixed z-50 top-0 left-0 right-0 progress progress-accent h-1" />;
+	return (
+		<progress className="fixed z-50 top-0 left-0 right-0 progress progress-accent h-1" />
+	);
 }

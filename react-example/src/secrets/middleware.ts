@@ -1,38 +1,38 @@
 import type {
-  MiddlewareContext,
-  MiddlewareFunction,
+	MiddlewareContext,
+	MiddlewareFunction,
 } from "framework/router/server";
 
 import { Secrets } from "./server";
 
 declare global {
-  interface ServerContext {
-    [Secrets.COOKIE_SECRET]?: string;
-    [Secrets.DB_PATH]?: string;
-    [Secrets.GROQ_API_KEY]?: string;
-  }
+	interface ServerContext {
+		[Secrets.COOKIE_SECRET]?: string;
+		[Secrets.DB_PATH]?: string;
+		[Secrets.GROQ_API_KEY]?: string;
+	}
 }
 
 export const configureSecretsMiddleware: MiddlewareFunction = (c, next) => {
-  configureSecret(c, Secrets.COOKIE_SECRET);
-  configureSecret(c, Secrets.DB_PATH, import.meta.env.PROD);
-  configureSecret(c, Secrets.GROQ_API_KEY, false);
+	configureSecret(c, Secrets.COOKIE_SECRET);
+	configureSecret(c, Secrets.DB_PATH, import.meta.env.PROD);
+	configureSecret(c, Secrets.GROQ_API_KEY, false);
 
-  return next();
+	return next();
 };
 
 function configureSecret(
-  { get, set }: MiddlewareContext,
-  key: keyof ServerContext,
-  required = true
+	{ get, set }: MiddlewareContext,
+	key: keyof ServerContext,
+	required = true,
 ) {
-  const existingSecret = get(key);
-  if (existingSecret) return;
+	const existingSecret = get(key);
+	if (existingSecret) return;
 
-  const secret = process.env[key];
-  if (!secret && required) {
-    throw new Error(`Missing required secret: ${key}`);
-  }
+	const secret = process.env[key];
+	if (!secret && required) {
+		throw new Error(`Missing required secret: ${key}`);
+	}
 
-  set(key, secret);
+	set(key, secret);
 }

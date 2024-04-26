@@ -1,5 +1,5 @@
-import { unsign } from "cookie-signature";
 import { parse } from "cookie";
+import { unsign } from "cookie-signature";
 
 import type { MiddlewareFunction } from "framework/router/server";
 
@@ -8,52 +8,52 @@ import { Secrets } from "@/secrets/server";
 import { USER_ID_KEY } from "./shared";
 
 export const parseUserIdMiddleware: MiddlewareFunction = (
-  { get, headers, set, setClient },
-  next
+	{ get, headers, set, setClient },
+	next,
 ) => {
-  const secret = get(Secrets.COOKIE_SECRET, true);
-  const existingUserId = get(USER_ID_KEY);
+	const secret = get(Secrets.COOKIE_SECRET, true);
+	const existingUserId = get(USER_ID_KEY);
 
-  if (existingUserId) return next();
+	if (existingUserId) return next();
 
-  const cookie = headers.get("Cookie");
-  const userId =
-    cookie &&
-    parse(cookie, {
-      decode(value) {
-        const unsigned = unsign(value, secret);
-        if (typeof unsigned === "boolean") return "";
-        return unsigned;
-      },
-    }).userId;
+	const cookie = headers.get("Cookie");
+	const userId =
+		cookie &&
+		parse(cookie, {
+			decode(value) {
+				const unsigned = unsign(value, secret);
+				if (typeof unsigned === "boolean") return "";
+				return unsigned;
+			},
+		}).userId;
 
-  set(USER_ID_KEY, userId ?? undefined);
-  setClient(USER_ID_KEY, userId ?? undefined);
+	set(USER_ID_KEY, userId ?? undefined);
+	setClient(USER_ID_KEY, userId ?? undefined);
 
-  return next();
+	return next();
 };
 
 export const redirectIfLoggedInMiddleware =
-  (to: string): MiddlewareFunction =>
-  ({ get, redirect }, next) => {
-    const userId = get(USER_ID_KEY);
+	(to: string): MiddlewareFunction =>
+	({ get, redirect }, next) => {
+		const userId = get(USER_ID_KEY);
 
-    if (userId) {
-      return redirect("/chat");
-    }
+		if (userId) {
+			return redirect("/chat");
+		}
 
-    return next();
-  };
+		return next();
+	};
 
 export const requireUserIdMiddleware: MiddlewareFunction = (
-  { get, redirect },
-  next
+	{ get, redirect },
+	next,
 ) => {
-  const userId = get(USER_ID_KEY);
+	const userId = get(USER_ID_KEY);
 
-  if (!userId) {
-    return redirect("/");
-  }
+	if (!userId) {
+		return redirect("/");
+	}
 
-  return next();
+	return next();
 };

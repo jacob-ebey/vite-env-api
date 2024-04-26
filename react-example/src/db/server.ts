@@ -8,46 +8,46 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import * as framework from "framework";
 import type { MiddlewareFunction } from "framework/router/server";
 
+import { Secrets } from "@/secrets/server";
 import type { DB } from "./schema";
 import schema from "./schema";
-import { Secrets } from "@/secrets/server";
 
 export const DB_KEY = "DB" as const;
 
 declare global {
-  interface ServerContext {
-    [DB_KEY]?: DB;
-  }
+	interface ServerContext {
+		[DB_KEY]?: DB;
+	}
 }
 
 let initialized = false;
 export const configureDBMiddleware: MiddlewareFunction = async (c, next) => {
-  let db = c.get(DB_KEY);
+	let db = c.get(DB_KEY);
 
-  if (!db) {
-    const dbPath = c.get(Secrets.DB_PATH, import.meta.env.PROD as false);
-    const dbDir = dbPath ? path.resolve(dbPath) : path.resolve("./.database");
+	if (!db) {
+		const dbPath = c.get(Secrets.DB_PATH, import.meta.env.PROD as false);
+		const dbDir = dbPath ? path.resolve(dbPath) : path.resolve("./.database");
 
-    if (!initialized) {
-      await fsp.mkdir(dbDir, { recursive: true });
-    }
+		if (!initialized) {
+			await fsp.mkdir(dbDir, { recursive: true });
+		}
 
-    const sqlite = new Database(path.resolve(dbDir, "database.db"));
-    db = drizzle(sqlite, { schema });
+		const sqlite = new Database(path.resolve(dbDir, "database.db"));
+		db = drizzle(sqlite, { schema });
 
-    if (!initialized) {
-      migrate(drizzle(sqlite), {
-        migrationsFolder: "./migrations",
-      });
-      initialized = true;
-    }
+		if (!initialized) {
+			migrate(drizzle(sqlite), {
+				migrationsFolder: "./migrations",
+			});
+			initialized = true;
+		}
 
-    c.set(DB_KEY, db);
-  }
+		c.set(DB_KEY, db);
+	}
 
-  return next();
+	return next();
 };
 
 export function getDB() {
-  return framework.get(DB_KEY, true);
+	return framework.get(DB_KEY, true);
 }
