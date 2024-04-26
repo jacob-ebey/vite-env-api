@@ -19,7 +19,12 @@
 		"customConditions": ["source"],
 		"rootDir": ".",
 		"paths": {
-			"@/*": ["./src/*"]
+			"@/*": ["./src/*"],
+			"framework": ["../framework/src/server.ts"],
+			"framework/browser": ["../framework/src/browser.ts"],
+			"framework/client": ["../framework/src/client.tsx"],
+			"framework/prerender": ["../framework/src/prerender.ts"],
+			"framework/shared": ["../framework/src/shared.tsx"]
 		},
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"types": [

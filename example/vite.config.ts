@@ -1,5 +1,3 @@
-import * as path from "node:path";
-
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import { createNodeDevEnvironment, defineConfig } from "vite";
@@ -18,22 +16,6 @@ const options = createReactServerOptions();
 
 export default defineConfig({
 	builder: reactServerBuilder(options),
-	build: {
-		emptyOutDir: true,
-		assetsInlineLimit: 0,
-	},
-	resolve: {
-		alias: {
-			"framework/browser": path.resolve("../framework/src/browser.ts"),
-			"framework/client": path.resolve("../framework/src/client.tsx"),
-			"framework/prerender": path.resolve("../framework/src/prerender.ts"),
-			"framework/runtime.client": path.resolve(
-				"../framework/src/runtime.client.ts",
-			),
-			"framework/shared": path.resolve("../framework/src/shared.tsx"),
-			framework: path.resolve("../framework/src/server.ts"),
-		},
-	},
 	environments: {
 		client: {
 			build: {
