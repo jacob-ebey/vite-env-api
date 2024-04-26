@@ -1,8 +1,10 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
-import { getOrCreateGlobal } from "./shared";
+import * as React from "react";
+
 import type { RouterContext } from "./router/server";
 import { REDIRECT_SYMBOL } from "./router/server";
+import { getOrCreateGlobal } from "./shared";
 
 declare global {
   // biome-ignore lint/suspicious/noEmptyInterface: used for declaration merging

@@ -51,11 +51,16 @@ export function useEnhancedActionState<
 }
 
 export function redirect(to: string) {
-  return __startNavigation(to, async (completeNavigation, aborted) => {
-    const payload = await navigate(to);
-    if (window.location.href !== payload.url.href && !aborted()) {
-      window.history.pushState(null, "", payload.url.href);
+  const controller = new AbortController();
+  return __startNavigation(
+    to,
+    controller,
+    async (completeNavigation, aborted) => {
+      const payload = await navigate(to, controller.signal);
+      if (window.location.href !== payload.url.href && !aborted()) {
+        window.history.pushState(null, "", payload.url.href);
+      }
+      completeNavigation(payload);
     }
-    completeNavigation(payload);
-  });
+  );
 }

@@ -14,14 +14,15 @@
 			"@/*": ["./src/*"],
 			"framework": ["./src/framework/server.ts"],
 			"framework/client": ["./src/framework/client.tsx"],
+			"framework/runtime.client": ["./src/framework/runtime.client.ts"],
 			"framework/router/browser": ["./src/framework/router/browser.tsx"],
 			"framework/router/prerender": ["./src/framework/router/prerender.tsx"],
 			"framework/router/server": ["./src/framework/router/server.tsx"],
-			"framework/runtime.client": ["./src/framework/runtime.client.ts"],
 			"framework/shared": ["./src/framework/shared.tsx"]
 		},
 		"types": [
 			"node",
+			"react/canary",
 			"react/experimental",
 			"react-dom/canary",
 			"react-dom/experimental",

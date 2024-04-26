@@ -3,10 +3,8 @@ import * as React from "react";
 import ReactServerDOM from "react-server-dom-diy/client";
 
 import { setGlobal } from "../shared";
-
-import type { ServerPayload } from "./server";
-
 import { RenderRoute, RouteProvider } from "./client";
+import type { ServerPayload } from "./server";
 
 type StartNavigation = (
   location: string,
@@ -111,7 +109,7 @@ async function callServer(id: string, args: unknown[]) {
 }
 
 if (typeof document !== "undefined") {
-  window.__callServer = callServer;
+  setGlobal("__callServer", callServer);
 }
 
 export async function navigate(

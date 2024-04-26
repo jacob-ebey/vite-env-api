@@ -4,7 +4,7 @@ import { logout } from "@/user/actions";
 import { getUserId } from "@/user/server";
 
 export function Header() {
-  const loggedIn = !!getUserId();
+  const loggedIn = !!getUserId(false);
   const url = framework.getURL();
   const redirectTo = url.pathname;
 

@@ -33,6 +33,7 @@ export const routes = createRoutes([
       {
         id: "chat",
         path: "chat",
+        import: () => import("./routes/chat/route"),
         children: [
           {
             id: "chat.detail",

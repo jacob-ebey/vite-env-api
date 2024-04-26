@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import * as React from "react";
 import { URLPattern } from "urlpattern-polyfill";
 
@@ -18,8 +18,6 @@ export default async function ChatRoute() {
   const userId = getUserId();
   const db = getDB();
 
-  if (!userId) return null;
-
   const matched = new URLPattern({ pathname: "/chat/:chatId?" }).exec(url);
   const chatId = matched?.pathname.groups.chatId;
 
@@ -28,9 +26,7 @@ export default async function ChatRoute() {
         where: and(eq(chat.userId, userId), eq(chat.id, chatId)),
         with: {
           messages: {
-            orderBy(fields, operators) {
-              return operators.desc(fields.order);
-            },
+            orderBy: ({ order }, { desc }) => desc(order),
             columns: {
               id: true,
               message: true,

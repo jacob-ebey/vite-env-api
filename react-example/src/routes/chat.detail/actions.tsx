@@ -48,9 +48,7 @@ export async function sendMessage(formData: FormData, stream = false) {
             columns: { id: true, name: true },
             with: {
               messages: {
-                orderBy(fields, operators) {
-                  return operators.asc(fields.id);
-                },
+                orderBy: ({ id }, { asc }) => asc(id),
                 columns: {
                   id: true,
                   message: true,

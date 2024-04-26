@@ -20,25 +20,27 @@ async function hydrate() {
   }
   const payload = await window.__payloadPromise;
   React.startTransition(() => {
+    const element = (
+      <React.StrictMode>
+        <BrowserRouter initialPayload={payload} />
+      </React.StrictMode>
+    );
+
     if (window.__reactRoot) {
-      window.__reactRoot.render(<BrowserRouter initialPayload={payload} />);
+      window.__reactRoot.render(element);
     } else {
-      window.__reactRoot = ReactDOM.hydrateRoot(
-        document,
-        <BrowserRouter initialPayload={payload} />,
-        {
-          formState: payload.formState,
-          onRecoverableError(error, errorInfo) {
-            console.error("RECOVERABLE ERROR", error, errorInfo);
-          },
-          onCaughtError(error, errorInfo) {
-            console.error("CAUGHT ERROR", error, errorInfo);
-          },
-          onUncaughtError(error, errorInfo) {
-            console.error("UNCAUGHT ERROR", error, errorInfo);
-          },
-        }
-      );
+      window.__reactRoot = ReactDOM.hydrateRoot(document, element, {
+        formState: payload.formState,
+        onRecoverableError(error, errorInfo) {
+          console.error("RECOVERABLE ERROR", error, errorInfo);
+        },
+        onCaughtError(error, errorInfo) {
+          console.error("CAUGHT ERROR", error, errorInfo);
+        },
+        onUncaughtError(error, errorInfo) {
+          console.error("UNCAUGHT ERROR", error, errorInfo);
+        },
+      });
     }
   });
 }

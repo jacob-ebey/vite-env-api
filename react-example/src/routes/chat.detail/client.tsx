@@ -4,9 +4,8 @@ import type { FieldMetadata } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import * as markdown from "tiny-markdown-parser";
 
-import { useEnhancedActionState, useHydrated } from "framework/client";
+import { useEnhancedActionState } from "framework/client";
 import { FormOptions } from "framework/shared";
 
 import { useForm } from "@/forms/client";
@@ -196,22 +195,6 @@ function SendMessageButton() {
         />
       </svg>
     </button>
-  );
-}
-
-export function MarkdownRenderer({
-  children,
-}: {
-  children: string | string[];
-}) {
-  const content = Array.isArray(children) ? children.join("") : children;
-
-  const parsed = React.useMemo(() => markdown.parse(content), [content]);
-  return (
-    <div
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: safe enough
-      dangerouslySetInnerHTML={{ __html: parsed }}
-    />
   );
 }
 
