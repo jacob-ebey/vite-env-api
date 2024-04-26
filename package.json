@@ -1,6 +1,7 @@
 {
 	"scripts": {
 		"build": "pnpm --recursive build",
+		"build:watch": "pnpm --parallel build:watch",
 		"fix": "biome check --apply .",
 		"lint": "biome check ."
 	},
