@@ -1,8 +1,7 @@
 import { createMiddleware } from "@hattip/adapter-node";
-import compression from "compression";
 import express from "express";
 
-import browserViteManifest from "./dist/browser/.vite/manifest.json" assert {
+import browserViteManifest from "./dist/browser/.vite/manifest.json" with {
 	type: "json",
 };
 import clientReferences from "./dist/prerender/_client-references.js";
@@ -104,8 +103,6 @@ start();
 
 async function start() {
 	const app = express();
-
-	app.use(compression());
 
 	app.use(express.static("dist/browser"));
 
