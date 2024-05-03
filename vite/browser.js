@@ -4,7 +4,6 @@ import ReactServerDOM from "react-server-dom-diy/client";
 import { navigate } from "framework/client";
 
 if (import.meta.hot) {
-	// TODO: figure out what's causing full page reloads on server updates
 	import.meta.hot.on("react-server:update", async () => {
 		const controller = new AbortController();
 		__startNavigation(
