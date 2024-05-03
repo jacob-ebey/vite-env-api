@@ -4,6 +4,7 @@ import { URLPattern } from "urlpattern-polyfill";
 
 import * as framework from "framework";
 
+import { Routes } from "@/app";
 import { chat } from "@/db/schema";
 import { getDB } from "@/db/server";
 import { getUserId } from "@/user/server";
@@ -11,7 +12,6 @@ import { getUserId } from "@/user/server";
 import { sendMessage } from "./actions";
 import { SendMessageForm } from "./client";
 import { AIMessage, UserMessage } from "./shared";
-import { Routes } from "@/app";
 
 export default async function ChatRoute() {
 	const url = framework.getURL();
