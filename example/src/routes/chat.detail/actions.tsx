@@ -81,12 +81,16 @@ export async function sendMessage(formData: FormData, stream = false) {
 				if (existingDBChat) return existingDBChat.name;
 
 				const response = await ollama.chat({
-					model: "phi3",
+					model: "llama3",
 					stream: false,
 					messages: [
 						{
+							role: "system",
+							content: "You are a short title generator.",
+						},
+						{
 							role: "user",
-							content: `Determine a short title for a chat thread with the first message of:\n\`\`\`\n${message}\n\`\`\`. Respond with ONLY the title. It should be under 30 characters.`,
+							content: `It should be under 30 characters. Respond with ONLY the title. Determine a short title for a chat thread with the first message of:\n\`\`\`\n${message}\n\`\`\`.`,
 						},
 					],
 				});
@@ -96,7 +100,7 @@ export async function sendMessage(formData: FormData, stream = false) {
 			const redirectToPromise = (async () => {
 				try {
 					const response = await ollama.chat({
-						model: "phi3",
+						model: "llama3",
 						stream: true,
 						messages: [
 							...existingMessages.map((message) => ({
