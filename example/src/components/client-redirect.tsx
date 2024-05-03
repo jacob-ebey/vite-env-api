@@ -4,7 +4,10 @@ import * as React from "react";
 
 import { redirect } from "framework/client";
 
-export function ClientRedirect({ to }: { to: string }) {
+export function ClientRedirect({
+	preventScrollReset,
+	to,
+}: { preventScrollReset?: boolean; to: string }) {
 	const ref = React.useRef(false);
 	const [redirectTo, setRedirectTo] = React.useState<string>(to);
 	if (to !== redirectTo) {
@@ -14,9 +17,9 @@ export function ClientRedirect({ to }: { to: string }) {
 	React.useEffect(() => {
 		if (!ref.current) {
 			ref.current = true;
-			redirect(redirectTo);
+			redirect(redirectTo, undefined, preventScrollReset);
 		}
-	}, [redirectTo]);
+	}, [preventScrollReset, redirectTo]);
 
 	return null;
 }

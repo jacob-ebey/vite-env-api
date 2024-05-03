@@ -26,11 +26,27 @@ export function setGlobal<K extends keyof typeof globalThis>(
 }
 
 export type FormOptionsProps = {
+	preventScrollReset?: boolean;
 	revalidate?: boolean | string[];
 };
 
-export function FormOptions({ revalidate }: FormOptionsProps) {
+export function FormOptions({
+	preventScrollReset,
+	revalidate,
+}: FormOptionsProps) {
 	const options = [];
+
+	if (preventScrollReset) {
+		options.push(
+			<input
+				type="hidden"
+				key="RSC-PreventScrollReset"
+				name="RSC-PreventScrollReset"
+				value="yes"
+			/>,
+		);
+	}
+
 	if (typeof revalidate === "boolean") {
 		if (!revalidate) {
 			options.push(

@@ -1,4 +1,4 @@
-import { RevalidationTargets, Routes } from "@/app";
+import { Routes } from "@/app";
 import { getChatsForUser } from "@/cache/chat";
 import { clearChats } from "./actions";
 
@@ -13,7 +13,6 @@ export default function ChatListRoute() {
 }
 
 export async function ChatList({ revalidate }: { revalidate?: string }) {
-	// await new Promise((resolve) => setTimeout(resolve, 1000));
 	const chats = await getChatsForUser();
 
 	// short date / time format

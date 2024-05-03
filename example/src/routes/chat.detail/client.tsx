@@ -8,7 +8,6 @@ import * as ReactDOM from "react-dom";
 import { useEnhancedActionState } from "framework/client";
 import { FormOptions } from "framework/shared";
 
-import { RevalidationTargets } from "@/app";
 import { useForm } from "@/forms/client";
 
 import type { sendMessage } from "./actions";
@@ -34,6 +33,7 @@ export function SendMessageForm({
 	const [pendingMessage, setPendingMessage] =
 		React.useOptimistic<React.ReactNode | null>(null);
 	const formRef = React.useRef<HTMLFormElement | null>(null);
+	const messageInputRef = React.useRef<HTMLInputElement | null>(null);
 
 	const [formState, dispatch, isPending] = useEnhancedActionState(
 		action,
@@ -42,6 +42,9 @@ export function SendMessageForm({
 			if (parsed.status === "success") {
 				setPendingMessage(<UserMessage>{parsed.value.message}</UserMessage>);
 			}
+
+			formRef.current?.reset();
+			messageInputRef.current?.focus();
 
 			const result = await action(formData, true);
 
@@ -102,9 +105,14 @@ export function SendMessageForm({
 					form.onSubmit(event);
 				}}
 			>
-				<FormOptions revalidate={false} />
+				<FormOptions preventScrollReset revalidate={false} />
 
-				<input type="hidden" name={chatId.name} value={currentChatId} />
+				<input
+					ref={messageInputRef}
+					type="hidden"
+					name={chatId.name}
+					value={currentChatId}
+				/>
 
 				<SendMessageLabel field={message}>
 					<SendMessageInput field={message} />

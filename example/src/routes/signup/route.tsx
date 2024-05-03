@@ -5,7 +5,7 @@ import { signup } from "@/user/actions";
 import { Routes } from "@/app";
 
 export default function LoginRoute() {
-	const signupAction = framework.getAction(signup);
+	const signupAction = framework.getActionResult(signup);
 
 	return (
 		<>

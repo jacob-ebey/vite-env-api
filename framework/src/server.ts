@@ -63,7 +63,7 @@ export function setClient<Key extends keyof ServerClientContext>(
 	context.setClient(key, value);
 }
 
-export function getAction<T>(
+export function getActionResult<T>(
 	action: T,
 	// biome-ignore lint/suspicious/noExplicitAny: needed for type inference
 ): T extends (...args: any) => infer R

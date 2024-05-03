@@ -15,7 +15,7 @@ import { Routes } from "@/app";
 
 export default async function ChatRoute() {
 	const url = framework.getURL();
-	const sendMessageAction = framework.getAction(sendMessage);
+	const sendMessageAction = framework.getActionResult(sendMessage);
 	const userId = getUserId();
 	const db = getDB();
 

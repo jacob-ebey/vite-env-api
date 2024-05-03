@@ -113,7 +113,6 @@ export async function sendMessage(formData: FormData, stream = false) {
 					let aiResponse = "";
 					let lastSentLength = 0;
 					for await (const chunk of response) {
-						console.log(chunk);
 						if (
 							typeof chunk.message.content === "string" &&
 							chunk.message.content
@@ -180,7 +179,7 @@ export async function sendMessage(formData: FormData, stream = false) {
 						<>
 							<AIMessage>{aiResponse.trim()}</AIMessage>
 							{redirectTo ? (
-								<ClientRedirect to={redirectTo} />
+								<ClientRedirect preventScrollReset to={redirectTo} />
 							) : (
 								<FocusSendMessageForm />
 							)}

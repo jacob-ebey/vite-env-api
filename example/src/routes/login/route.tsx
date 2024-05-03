@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/auth-forms";
 import { login } from "@/user/actions";
 
 export default function LoginRoute() {
-	const loginAction = framework.getAction(login);
+	const loginAction = framework.getActionResult(login);
 
 	return (
 		<>

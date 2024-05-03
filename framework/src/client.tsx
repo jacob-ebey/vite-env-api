@@ -51,7 +51,11 @@ export function useEnhancedActionState<
 	return [state, action, pending] as const;
 }
 
-export function redirect(to: string, revalidate?: string) {
+export function redirect(
+	to: string,
+	revalidate?: string,
+	preventScrollReset = false,
+) {
 	const controller = new AbortController();
 	return __startNavigation(
 		to,
@@ -61,7 +65,7 @@ export function redirect(to: string, revalidate?: string) {
 			if (window.location.href !== payload.url.href && !aborted()) {
 				window.history.pushState(null, "", payload.url.href);
 			}
-			if (!aborted()) {
+			if (!aborted() && !preventScrollReset) {
 				scrollToTop();
 			}
 			completeNavigation(payload);

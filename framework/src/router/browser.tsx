@@ -31,9 +31,6 @@ export const NavigationContext = React.createContext<Navigation>({
 	pending: false,
 });
 
-// let navigationId = 0;
-// let setPayloadURL: (url: { href: string }) => void;
-// let updatePayload: (payload: ServerPayload) => void;
 let startNavigation: StartNavigation;
 
 export async function getInitialPayload() {
@@ -46,7 +43,11 @@ export async function getInitialPayload() {
 
 async function callServer(id: string, args: unknown[]) {
 	let revalidateHeader: string | null = null;
+	let preventScrollReset = false;
 	if (typeof args[0] === "object" && args[0] instanceof FormData) {
+		preventScrollReset = args[0].get("RSC-PreventScrollReset") === "yes";
+		args[0].delete("RSC-PreventScrollReset");
+
 		const revalidate = args[0].get("RSC-Revalidate");
 		if (revalidate && typeof revalidate === "string") {
 			if (revalidate !== "no") {
@@ -85,11 +86,12 @@ async function callServer(id: string, args: unknown[]) {
 				payload.redirect,
 				controller.signal,
 				revalidateHeader,
+				preventScrollReset,
 			);
 		}
 		if (window.location.href !== payload.url.href && !aborted()) {
 			window.history.pushState(null, "", payload.url.href);
-			if (!aborted()) {
+			if (!aborted() && !preventScrollReset) {
 				scrollToTop();
 			}
 		}
@@ -108,6 +110,7 @@ export async function navigate(
 	to: string,
 	signal: AbortSignal,
 	revalidate?: string | null,
+	preventScrollReset = false,
 ): Promise<ServerPayload> {
 	const url = new URL(to, window.location.href);
 	const responsePromise = fetch(url, {
@@ -125,7 +128,7 @@ export async function navigate(
 	})) as ServerPayload;
 
 	if (payload.redirect) {
-		return navigate(payload.redirect, signal, revalidate);
+		return navigate(payload.redirect, signal, revalidate, preventScrollReset);
 	}
 
 	return payload;
@@ -159,7 +162,6 @@ export function BrowserRouter({
 		payload: initialPayload,
 	});
 	const state = React.useDeferredValue(_state);
-	// const [state, setOptimisticState] = React.useOptimistic(_state);
 
 	startNavigation = React.useCallback<StartNavigation>(
 		async (location, controller, callback) => {
@@ -286,6 +288,8 @@ export function BrowserRouter({
 			if (!href || href.indexOf(window.location.origin) !== 0) return;
 
 			const revalidate = anchor.getAttribute("data-revalidate");
+			const preventScrollReset =
+				anchor.getAttribute("data-prevent-scroll-reset") === "yes";
 
 			event.preventDefault();
 			const controller = new AbortController();
@@ -293,11 +297,16 @@ export function BrowserRouter({
 				href,
 				controller,
 				async (completeNavigation, aborted) => {
-					const payload = await navigate(href, controller.signal, revalidate);
+					const payload = await navigate(
+						href,
+						controller.signal,
+						revalidate,
+						preventScrollReset,
+					);
 					if (window.location.href !== payload.url.href && !aborted()) {
 						window.history.pushState(null, "", payload.url.href);
 					}
-					if (!aborted()) {
+					if (!aborted() && !preventScrollReset) {
 						scrollToTop();
 					}
 					completeNavigation(payload);
@@ -316,10 +325,6 @@ export function BrowserRouter({
 	if (!state.payload.tree) {
 		throw new Error("No elements rendered on the server");
 	}
-
-	// if (state.promise) {
-	// 	React.use(state.promise);
-	// }
 
 	return (
 		<NavigationContext.Provider value={navigation}>
