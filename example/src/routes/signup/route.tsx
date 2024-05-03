@@ -1,8 +1,8 @@
 import * as framework from "framework";
 
+import { Routes } from "@/app";
 import { SignupForm } from "@/components/auth-forms";
 import { signup } from "@/user/actions";
-import { Routes } from "@/app";
 
 export default function LoginRoute() {
 	const signupAction = framework.getActionResult(signup);

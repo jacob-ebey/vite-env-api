@@ -1,7 +1,4 @@
-import type {
-	MiddlewareContext,
-	MiddlewareFunction,
-} from "framework";
+import type { MiddlewareContext, MiddlewareFunction } from "framework";
 
 import { Secrets } from "./server";
 

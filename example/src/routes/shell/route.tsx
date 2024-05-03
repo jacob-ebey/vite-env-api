@@ -1,6 +1,6 @@
+import { PendingIndicator } from "./client";
 import { Favicons } from "./favicons";
 import { Header } from "./header";
-import { PendingIndicator } from "./client";
 
 export default async function ShellRoute({
 	children,

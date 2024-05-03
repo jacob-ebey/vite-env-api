@@ -1,8 +1,8 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 
-import { BrowserRouter, getInitialPayload } from "framework/browser";
 import "@framework/vite/browser";
+import { BrowserRouter, getInitialPayload } from "framework/browser";
 
 import "./global.css";
 

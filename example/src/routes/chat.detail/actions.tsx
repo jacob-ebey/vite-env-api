@@ -1,9 +1,9 @@
 "use server";
 
 import { parseWithZod } from "@conform-to/zod";
-import { Ollama } from "ollama";
 import { createStreamableUI } from "ai/rsc";
 import { and, eq } from "drizzle-orm";
+import { Ollama } from "ollama";
 
 import * as framework from "framework";
 
