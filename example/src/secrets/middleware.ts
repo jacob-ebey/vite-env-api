@@ -9,14 +9,14 @@ declare global {
 	interface ServerContext {
 		[Secrets.COOKIE_SECRET]?: string;
 		[Secrets.DB_PATH]?: string;
-		[Secrets.GROQ_API_KEY]?: string;
+		[Secrets.OLLAMA_HOST]?: string;
 	}
 }
 
 export const configureSecretsMiddleware: MiddlewareFunction = (c, next) => {
 	configureSecret(c, Secrets.COOKIE_SECRET);
 	configureSecret(c, Secrets.DB_PATH, import.meta.env.PROD);
-	configureSecret(c, Secrets.GROQ_API_KEY, false);
+	configureSecret(c, Secrets.OLLAMA_HOST, import.meta.env.PROD);
 
 	return next();
 };

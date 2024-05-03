@@ -2,6 +2,7 @@ import * as framework from "framework";
 
 import { SignupForm } from "@/components/auth-forms";
 import { signup } from "@/user/actions";
+import { Routes } from "@/app";
 
 export default function LoginRoute() {
 	const signupAction = framework.getAction(signup);
@@ -11,13 +12,13 @@ export default function LoginRoute() {
 			<title>Sign up</title>
 			<meta name="description" content="Log in to get started." />
 			<main className="flex flex-col flex-1">
-				<section className="pt-12 pb-24 flex-1 flex flex-col justify-center">
-					<div className="max-w-md w-full mx-auto px-4 flex flex-col gap-4">
+				<section className="flex flex-col justify-center flex-1 pt-12 pb-24">
+					<div className="flex flex-col w-full max-w-md gap-4 px-4 mx-auto">
 						<h1 className="text-3xl font-bold">Sign up to get started</h1>
 						<SignupForm action={signup} initialState={signupAction.result} />
 						<p>
 							Already have an account?{" "}
-							<a href="/" className="text-primary">
+							<a href={Routes.login.pathname()} className="text-primary">
 								Log in
 							</a>
 						</p>

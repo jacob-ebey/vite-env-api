@@ -22,17 +22,17 @@ function devHash(str: string, _: "use client" | "use server") {
 }
 
 declare global {
-	var clientModules: Set<string>;
-	var serverModules: Set<string>;
+	var __clientModules: Set<string>;
+	var __serverModules: Set<string>;
 }
 
-global.clientModules = global.clientModules || new Set<string>();
-global.serverModules = global.serverModules || new Set<string>();
+global.__clientModules = global.__clientModules || new Set<string>();
+global.__serverModules = global.__serverModules || new Set<string>();
 
 export function createReactServerOptions() {
 	return {
-		clientModules,
-		serverModules,
+		clientModules: global.__clientModules,
+		serverModules: global.__clientModules,
 	};
 }
 
@@ -262,6 +262,7 @@ export function reactServerPlugin({
 export function reactServerDevServer({
 	createPrerenderEnvironment,
 	createServerEnvironment,
+	clientModules,
 }: {
 	createPrerenderEnvironment?: (
 		server: ViteDevServer,
@@ -271,6 +272,7 @@ export function reactServerDevServer({
 		server: ViteDevServer,
 		name: string,
 	) => DevEnvironment | Promise<DevEnvironment>;
+	clientModules: Set<string>;
 }): Plugin {
 	const runners = {} as Record<
 		"ssr" | "server",
@@ -519,7 +521,9 @@ export function reactServerDevServer({
 				ctx.environment.hot.send("react-server:update", {
 					ids,
 				});
-				return [];
+				return ctx.modules.filter(
+					(mod) => !!mod.id && clientModules.has(mod.id),
+				);
 			}
 		},
 	};

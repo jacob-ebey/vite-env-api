@@ -238,23 +238,12 @@ export async function runRoutes(
 		}
 	}
 
-	let revalidate: boolean | string[] = true;
 	const toRender: ServerPayload = {
 		url: { href: request.url },
 	};
 	if (request.method === "POST") {
 		const actionId = request.headers.get("RSC-Action");
 		if (actionId) {
-			const revalidateHeader = request.headers.get("RSC-Revalidate");
-			revalidate =
-				revalidateHeader === "no"
-					? false
-					: revalidateHeader
-						? JSON.parse(revalidateHeader)
-						: true;
-			if (typeof revalidate !== "boolean" && !Array.isArray(revalidate)) {
-				revalidate = true;
-			}
 			const serverReference =
 				__diy_server_manifest__.resolveServerReference(actionId);
 			const [serverAction, args] = await Promise.all([
@@ -309,22 +298,45 @@ export async function runRoutes(
 		}
 	}
 
+	let revalidate: boolean | string[] = true;
+	try {
+		const revalidateHeader = request.headers.get("RSC-Revalidate");
+		revalidate =
+			revalidateHeader === "no"
+				? false
+				: revalidateHeader
+					? JSON.parse(revalidateHeader)
+					: true;
+		if (typeof revalidate !== "boolean" && !Array.isArray(revalidate)) {
+			revalidate = true;
+		}
+	} catch (reason) {
+		console.error(
+			"Invalid RSC-Revalidate input value, falling back to a full revalidation",
+		);
+	}
+
 	if (context.redirect) {
 		toRender.redirect = context.redirect;
 	} else if (revalidate) {
+		const toRevalidate = Array.isArray(revalidate) ? new Set(revalidate) : null;
 		const matched: string[] = [];
 		const rendered: Record<string, React.ReactNode> = {};
+
 		let lastId: string | null = null;
 		for (let i = matches.length - 1; i >= 0; i--) {
 			const match = matches[i];
 			const Route = match.default;
 			if (Route) {
 				matched.unshift(match.id);
-				const children = lastId ? <RenderRoute id={lastId} /> : null;
-				rendered[match.id] = <Route>{children}</Route>;
+				if (!toRevalidate || toRevalidate.has(match.id)) {
+					const children = lastId ? <RenderRoute id={lastId} /> : null;
+					rendered[match.id] = <Route>{children}</Route>;
+				}
 				lastId = match.id;
 			}
 		}
+
 		toRender.tree = { matched, rendered };
 	}
 

@@ -10,6 +10,6 @@ export function PendingIndicator() {
 	}
 
 	return (
-		<progress className="fixed z-50 top-0 left-0 right-0 progress progress-accent h-1" />
+		<progress className="fixed top-0 left-0 right-0 z-50 h-1 progress progress-accent" />
 	);
 }

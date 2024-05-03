@@ -17,7 +17,7 @@
 		"moduleResolution": "Bundler",
 		"jsx": "react-jsx",
 		"customConditions": ["source"],
-		"rootDir": ".",
+		"rootDir": "..",
 		"paths": {
 			"@/*": ["./src/*"],
 			"framework": ["../framework/src/server.ts"],
@@ -33,6 +33,7 @@
 			"react/experimental",
 			"react-dom/canary",
 			"react-dom/experimental",
+			"types-react",
 			"vite/client"
 		]
 	}

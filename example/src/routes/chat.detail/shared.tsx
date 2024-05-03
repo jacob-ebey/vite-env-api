@@ -26,10 +26,10 @@ export function PendingAIMessage() {
 	);
 }
 
-export function RetryMessage({ children }: { children: string | string[] }) {
+export function ErrorMessage({ children }: { children: string | string[] }) {
 	return (
 		<div className="max-w-full pl-4 prose border-l border-error text-error">
-			<MarkdownRenderer>{children}</MarkdownRenderer>
+			{children}
 		</div>
 	);
 }

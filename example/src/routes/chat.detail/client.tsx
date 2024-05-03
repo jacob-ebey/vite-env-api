@@ -8,6 +8,7 @@ import * as ReactDOM from "react-dom";
 import { useEnhancedActionState } from "framework/client";
 import { FormOptions } from "framework/shared";
 
+import { RevalidationTargets } from "@/app";
 import { useForm } from "@/forms/client";
 
 import type { sendMessage } from "./actions";
@@ -89,7 +90,7 @@ export function SendMessageForm({
 			<form
 				id={form.id}
 				noValidate={form.noValidate}
-				className="mb-6"
+				className="fixed bottom-0 left-0 right-0 px-4 pb-6 bg-base-100 md:px-0 md:relative md:bottom-auto md:left-auto md:right-auto"
 				ref={formRef}
 				action={dispatch}
 				onSubmit={(event) => {

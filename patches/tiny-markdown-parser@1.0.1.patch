@@ -1,0 +1,16 @@
+diff --git a/package.json b/package.json
+index db5bd9b1ac8a1ba8ba85598847404dcd57b8e87b..cdbce66f6ccb432dfe92a243996568682d989702 100644
+--- a/package.json
++++ b/package.json
+@@ -4,7 +4,10 @@
+   "description": "Tiny ~1.1kB markdown parser with TypeScript typings",
+   "main": "./dist/index.umd.js",
+   "module": "./dist/index.module.mjs",
+-  "exports": "./dist/index.modern.mjs",
++  "exports": {
++    "types": "./tiny-markdown-parser.d.ts",
++    "default": "./dist/index.modern.mjs"
++  },
+   "types": "./tiny-markdown-parser.d.ts",
+   "files": [
+     "dist",

@@ -12,6 +12,10 @@
 		".": {
 			"types": "./dist/plugin.d.ts",
 			"default": "./dist/plugin.js"
+		},
+		"./browser": {
+			"types": "./browser.d.ts",
+			"default": "./browser.js"
 		}
 	},
 	"scripts": {

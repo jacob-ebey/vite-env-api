@@ -39,7 +39,7 @@ export const redirectIfLoggedInMiddleware =
 		const userId = get(USER_ID_KEY);
 
 		if (userId) {
-			return redirect("/chat");
+			return redirect(to);
 		}
 
 		return next();

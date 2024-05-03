@@ -4,11 +4,10 @@
 	"name": "example",
 	"version": "0.0.0",
 	"scripts": {
-		"build": "vite build --all",
+		"build": "vite build --all && tsc",
 		"dev": "vite",
 		"generate:migration": "pnpm drizzle-kit generate:sqlite",
-		"start": "cross-env NODE_ENV=production node --no-warnings server.js",
-		"typecheck": "tsc"
+		"start": "cross-env NODE_ENV=production node --no-warnings server.js"
 	},
 	"bundlePrerender": [],
 	"doNotBundleServer": [
@@ -43,8 +42,6 @@
 		"@framework/vite": "workspace:*",
 		"@hattip/adapter-node": "0.0.45",
 		"@hattip/core": "0.0.45",
-		"@langchain/core": "0.1.59",
-		"@langchain/groq": "0.0.8",
 		"ai": "3.0.29",
 		"bcrypt": "5.1.1",
 		"better-sqlite3": "9.5.0",
@@ -57,6 +54,7 @@
 		"express": "4.19.2",
 		"framework": "workspace:*",
 		"jsondiffpatch": "0.6.0",
+		"ollama": "0.5.0",
 		"react": "0.0.0-experimental-96c584661-20240412",
 		"react-dom": "0.0.0-experimental-96c584661-20240412",
 		"react-server-dom-diy": "0.0.0-experimental-15a3a5622-202404158",
@@ -68,7 +66,7 @@
 		"zod-to-json-schema": "3.23.0"
 	},
 	"devDependencies": {
-		"@tailwindcss/typography": "^0.5.12",
+		"@tailwindcss/typography": "0.5.12",
 		"@tailwindcss/vite": "4.0.0-alpha.14",
 		"@types/bcrypt": "5.0.2",
 		"@types/better-sqlite3": "7.6.10",
@@ -88,6 +86,7 @@
 		"postcss": "8.4.38",
 		"rollup-plugin-visualizer": "5.12.0",
 		"tailwindcss": "3.4.3",
+		"types-react": "19.0.0-alpha.3",
 		"typescript": "5.4.5",
 		"vite": "6.0.0-alpha.1",
 		"vite-tsconfig-paths": "4.3.2"

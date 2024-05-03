@@ -1,6 +1,6 @@
 import { Favicons } from "./favicons";
 import { Header } from "./header";
-import { PendingIndicator } from "./pending-indicator";
+import { PendingIndicator } from "./client";
 
 export default async function ShellRoute({
 	children,
@@ -8,7 +8,7 @@ export default async function ShellRoute({
 	children?: React.ReactNode;
 }) {
 	return (
-		<html lang="en" className="bg-neutral h-screen overflow-hidden">
+		<html lang="en" className="h-screen overflow-hidden bg-neutral">
 			<head>
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -17,7 +17,7 @@ export default async function ShellRoute({
 				<Favicons />
 				<link rel="manifest" href="/manifest.json" />
 			</head>
-			<body className="flex flex-col h-screen bg-base-100 text-base-content overflow-y-auto">
+			<body className="flex flex-col h-screen bg-base-100 text-base-content">
 				<PendingIndicator />
 				<Header />
 				{children}

@@ -48,24 +48,11 @@ async function callServer(id: string, args: unknown[]) {
 	let revalidateHeader: string | null = null;
 	if (typeof args[0] === "object" && args[0] instanceof FormData) {
 		const revalidate = args[0].get("RSC-Revalidate");
-		if (revalidate) {
-			let invalid = false;
+		if (revalidate && typeof revalidate === "string") {
 			if (revalidate !== "no") {
-				try {
-					if (
-						typeof revalidate === "object" ||
-						!Array.isArray(JSON.parse(String(revalidate)))
-					) {
-						invalid = true;
-					}
-				} catch {
-					invalid = true;
-				}
+				JSON.parse(revalidate);
 			}
-			if (invalid) {
-				throw new Error("Invalid RSC-Revalidate input value");
-			}
-			revalidateHeader = String(revalidate);
+			revalidateHeader = revalidate;
 		}
 	}
 
@@ -90,19 +77,24 @@ async function callServer(id: string, args: unknown[]) {
 		}),
 	);
 
-	if (revalidateHeader !== "no") {
-		const controller = new AbortController();
-		__startNavigation(href, controller, async (completeNavigation, aborted) => {
-			let payload = await payloadPromise;
-			if (payload.redirect) {
-				payload = await navigate(payload.redirect, controller.signal);
+	const controller = new AbortController();
+	__startNavigation(href, controller, async (completeNavigation, aborted) => {
+		let payload = await payloadPromise;
+		if (payload.redirect) {
+			payload = await navigate(
+				payload.redirect,
+				controller.signal,
+				revalidateHeader,
+			);
+		}
+		if (window.location.href !== payload.url.href && !aborted()) {
+			window.history.pushState(null, "", payload.url.href);
+			if (!aborted()) {
+				scrollToTop();
 			}
-			if (window.location.href !== payload.url.href && !aborted()) {
-				window.history.pushState(null, "", payload.url.href);
-			}
-			completeNavigation(payload);
-		});
-	}
+		}
+		completeNavigation(payload);
+	});
 
 	const payload = await payloadPromise;
 	return payload.returnValue;
@@ -115,12 +107,14 @@ if (typeof document !== "undefined") {
 export async function navigate(
 	to: string,
 	signal: AbortSignal,
+	revalidate?: string | null,
 ): Promise<ServerPayload> {
 	const url = new URL(to, window.location.href);
 	const responsePromise = fetch(url, {
 		headers: {
 			Accept: "text/x-component",
 			"RSC-Refresh": "1",
+			"RSC-Revalidate": revalidate ?? "true",
 		},
 		signal,
 	});
@@ -131,7 +125,7 @@ export async function navigate(
 	})) as ServerPayload;
 
 	if (payload.redirect) {
-		return navigate(payload.redirect, signal);
+		return navigate(payload.redirect, signal, revalidate);
 	}
 
 	return payload;
@@ -157,11 +151,15 @@ export function BrowserRouter({
 		id: number;
 		location: string;
 	}>(null);
-	const [state, setState] = React.useState({
+	const [_state, setState] = React.useState<{
+		id: number;
+		payload: ServerPayload;
+	}>({
 		id: 0,
 		payload: initialPayload,
 	});
-	// const deferredState = React.useDeferredValue(state);
+	const state = React.useDeferredValue(_state);
+	// const [state, setOptimisticState] = React.useOptimistic(_state);
 
 	startNavigation = React.useCallback<StartNavigation>(
 		async (location, controller, callback) => {
@@ -172,51 +170,77 @@ export function BrowserRouter({
 				controller,
 			});
 
-			setPendingState({ id, location });
-			await callback(
-				(payload) => {
-					navigationStateRef.current.previousNavigationControllers =
-						navigationStateRef.current.previousNavigationControllers.filter(
-							(previous) => {
-								if (previous.id >= id) {
-									return true;
-								}
-								previous.controller.abort(new Error("Navigation aborted"));
-								return false;
-							},
-						);
-					if (id < navigationStateRef.current.id) {
-						controller.abort(new Error("Navigation aborted"));
-						return;
-					}
-					startTransition(() => {
-						setState({
-							id,
-							payload,
+			startTransition(async () => {
+				setPendingState({
+					id,
+					location,
+				});
+
+				await callback(
+					(newPayload) => {
+						navigationStateRef.current.previousNavigationControllers =
+							navigationStateRef.current.previousNavigationControllers.filter(
+								(previous) => {
+									if (previous.id >= id) {
+										return true;
+									}
+									previous.controller.abort(new Error("Navigation aborted"));
+									return false;
+								},
+							);
+						if (id < navigationStateRef.current.id) {
+							const error = new Error("Navigation aborted");
+							controller.abort(error);
+							return;
+						}
+						startTransition(() => {
+							setState((existingState) => {
+								const existingTree = existingState.payload.tree ?? {
+									matched: [],
+									rendered: {},
+								};
+								const matched =
+									newPayload.tree?.matched ?? existingTree.matched;
+								return {
+									id,
+									payload: {
+										...newPayload,
+										clientContext: {
+											...existingState.payload.clientContext,
+											...newPayload.clientContext,
+										},
+										tree: {
+											matched,
+											rendered: Object.fromEntries(
+												matched.map((id) => [
+													id,
+													newPayload.tree?.rendered[id] ??
+														existingTree.rendered[id],
+												]),
+											),
+										},
+									} satisfies ServerPayload,
+								};
+							});
 						});
-					});
-				},
-				() => id < navigationStateRef.current.id,
-			);
+					},
+					() => id < navigationStateRef.current.id,
+				);
+			});
 		},
 		[],
 	);
 	setGlobal("__startNavigation", startNavigation);
 
 	const navigation: Navigation =
-		pendingState && pendingState.id > state.id
+		pendingState && (pendingState.id > state.id || isPending)
 			? {
 					href: pendingState.location,
 					pending: true,
 				}
-			: isPending
-				? {
-						href: state.payload.url.href,
-						pending: true,
-					}
-				: {
-						pending: false,
-					};
+			: {
+					pending: false,
+				};
 
 	React.useEffect(() => {
 		const handlePopState = (event: PopStateEvent) => {
@@ -228,6 +252,9 @@ export function BrowserRouter({
 				const payload = await navigate(to, controller.signal);
 				if (window.location.href !== payload.url.href && !aborted()) {
 					window.history.replaceState(null, "", payload.url.href);
+				}
+				if (!aborted()) {
+					scrollToTop();
 				}
 				completeNavigation(payload);
 			});
@@ -258,15 +285,20 @@ export function BrowserRouter({
 			// if it's not a location on the same domain
 			if (!href || href.indexOf(window.location.origin) !== 0) return;
 
+			const revalidate = anchor.getAttribute("data-revalidate");
+
 			event.preventDefault();
 			const controller = new AbortController();
 			__startNavigation(
 				href,
 				controller,
 				async (completeNavigation, aborted) => {
-					const payload = await navigate(href, controller.signal);
+					const payload = await navigate(href, controller.signal, revalidate);
 					if (window.location.href !== payload.url.href && !aborted()) {
 						window.history.pushState(null, "", payload.url.href);
+					}
+					if (!aborted()) {
+						scrollToTop();
 					}
 					completeNavigation(payload);
 				},
@@ -285,6 +317,10 @@ export function BrowserRouter({
 		throw new Error("No elements rendered on the server");
 	}
 
+	// if (state.promise) {
+	// 	React.use(state.promise);
+	// }
+
 	return (
 		<NavigationContext.Provider value={navigation}>
 			<RouteProvider
@@ -295,4 +331,12 @@ export function BrowserRouter({
 			</RouteProvider>
 		</NavigationContext.Provider>
 	);
+}
+
+export function scrollToTop() {
+	window.scrollTo({ top: 0, behavior: "smooth" });
+	const scrollTargets = document.querySelectorAll("[data-scroll-to-top]");
+	for (const target of scrollTargets) {
+		target.scrollTo({ top: 0, behavior: "smooth" });
+	}
 }

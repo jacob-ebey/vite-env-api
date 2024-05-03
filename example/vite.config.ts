@@ -82,6 +82,7 @@ export default defineConfig({
 		react(),
 		reactServerPlugin(options),
 		reactServerDevServer({
+			...options,
 			createPrerenderEnvironment: createNodeDevEnvironment,
 			createServerEnvironment: createNodeDevEnvironment,
 		}),

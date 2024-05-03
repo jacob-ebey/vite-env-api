@@ -12,7 +12,8 @@
 			"vite": "6.0.0-alpha.1"
 		},
 		"patchedDependencies": {
-			"react@0.0.0-experimental-96c584661-20240412": "patches/react@0.0.0-experimental-96c584661-20240412.patch"
+			"react@0.0.0-experimental-96c584661-20240412": "patches/react@0.0.0-experimental-96c584661-20240412.patch",
+			"tiny-markdown-parser@1.0.1": "patches/tiny-markdown-parser@1.0.1.patch"
 		}
 	},
 	"devDependencies": {

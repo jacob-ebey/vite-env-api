@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import type { Navigation } from "./router/browser.js";
-import { NavigationContext, navigate } from "./router/browser.js";
+import { NavigationContext, navigate, scrollToTop } from "./router/browser.js";
 export { useServerContext } from "./router/client.js";
 
 export type { Navigation };
@@ -51,15 +51,18 @@ export function useEnhancedActionState<
 	return [state, action, pending] as const;
 }
 
-export function redirect(to: string) {
+export function redirect(to: string, revalidate?: string) {
 	const controller = new AbortController();
 	return __startNavigation(
 		to,
 		controller,
 		async (completeNavigation, aborted) => {
-			const payload = await navigate(to, controller.signal);
+			const payload = await navigate(to, controller.signal, revalidate);
 			if (window.location.href !== payload.url.href && !aborted()) {
 				window.history.pushState(null, "", payload.url.href);
+			}
+			if (!aborted()) {
+				scrollToTop();
 			}
 			completeNavigation(payload);
 		},

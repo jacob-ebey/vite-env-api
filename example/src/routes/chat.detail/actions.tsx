@@ -1,9 +1,7 @@
 "use server";
 
 import { parseWithZod } from "@conform-to/zod";
-import type { BaseMessagePromptTemplateLike } from "@langchain/core/prompts";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { ChatGroq } from "@langchain/groq";
+import { Ollama } from "ollama";
 import { createStreamableUI } from "ai/rsc";
 import { and, eq } from "drizzle-orm";
 
@@ -19,13 +17,13 @@ import { FocusSendMessageForm } from "./client";
 import { sendMessageSchema } from "./schema";
 import {
 	AIMessage,
+	ErrorMessage,
 	PendingAIMessage,
-	RetryMessage,
 	UserMessage,
 } from "./shared";
 
 export async function sendMessage(formData: FormData, stream = false) {
-	const apiKey = framework.get(Secrets.GROQ_API_KEY);
+	const ollamaHost = framework.get(Secrets.OLLAMA_HOST);
 	const db = getDB();
 
 	const [userId, parsed] = await Promise.all([
@@ -72,57 +70,55 @@ export async function sendMessage(formData: FormData, stream = false) {
 
 			const existingMessages = existingDBChat?.messages ?? [];
 
-			const groq = new ChatGroq({
-				apiKey,
-				model: "llama3-70b-8192",
-			});
-
 			const aiMessage = createStreamableUI(<PendingAIMessage />);
 			const userMessage = createStreamableUI(
 				<UserMessage>{message}</UserMessage>,
 			);
 
-			const chatNamePromise = !existingDBChat
-				? ChatPromptTemplate.fromMessages([
-						[
-							"system",
-							"You are a function calling AI assistant tasked with determining a short title for a new chat thread based on the first message and calling 'set_chat_name.'.",
-						],
-						[
-							"human",
-							"Determine a short title for a chat thread with the first message of\n" +
-								"<first_message>\n{message}\n</first_message>",
-						],
-					])
-						.pipe(groq)
-						.invoke({ message })
-						.then((response) => {
-							const toolCall = response.tool_calls?.find(
-								(call) => call.name === "set_chat_name",
-							);
-							return (toolCall?.args?.chat_name as string) || "New Chat";
-						})
-				: existingDBChat.name;
+			const ollama = new Ollama({ host: ollamaHost });
+
+			const chatNamePromise = (async () => {
+				if (existingDBChat) return existingDBChat.name;
+
+				const response = await ollama.chat({
+					model: "phi3",
+					stream: false,
+					messages: [
+						{
+							role: "user",
+							content: `Determine a short title for a chat thread with the first message of:\n\`\`\`\n${message}\n\`\`\`. Respond with ONLY the title. It should be under 30 characters.`,
+						},
+					],
+				});
+				return response.message.content;
+			})();
 
 			const redirectToPromise = (async () => {
 				try {
-					const stream = await ChatPromptTemplate.fromMessages([
-						["system", "You are a helpful AI assistant."],
-						...existingMessages.map<BaseMessagePromptTemplateLike>(
-							(message) => [message.userId ? "human" : "ai", message.message],
-						),
-						["human", "{message}"],
-					])
-						.pipe(groq)
-						.stream({
-							message,
-						});
+					const response = await ollama.chat({
+						model: "phi3",
+						stream: true,
+						messages: [
+							...existingMessages.map((message) => ({
+								role: message.userId ? "user" : "assistant",
+								content: message.message,
+							})),
+							{
+								role: "user",
+								content: message,
+							},
+						],
+					});
 
 					let aiResponse = "";
 					let lastSentLength = 0;
-					for await (const chunk of stream) {
-						if (typeof chunk.content === "string" && chunk.content) {
-							aiResponse += chunk.content;
+					for await (const chunk of response) {
+						console.log(chunk);
+						if (
+							typeof chunk.message.content === "string" &&
+							chunk.message.content
+						) {
+							aiResponse += chunk.message.content;
 							const trimmed = aiResponse.trim();
 							// send in chunks of 10 characters
 							if (trimmed && trimmed.length - lastSentLength >= 10) {
@@ -192,17 +188,16 @@ export async function sendMessage(formData: FormData, stream = false) {
 					);
 
 					return redirectTo;
-				} catch (reason) {
-					console.error(reason);
+				} catch (error) {
+					console.error(error);
 					userMessage.done();
 					aiMessage.done(
-						<RetryMessage>
-							Sorry, I'm having trouble processing your message. Please try
-							again.
-						</RetryMessage>,
+						<ErrorMessage>
+							Failed to send message. Please try again.
+						</ErrorMessage>,
 					);
 				}
-			})().catch(() => undefined);
+			})();
 
 			if (!stream && !existingDBChat) {
 				const redirectTo = await redirectToPromise;

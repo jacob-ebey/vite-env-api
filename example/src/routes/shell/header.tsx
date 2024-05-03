@@ -1,5 +1,6 @@
 import * as framework from "framework";
 
+import { Routes } from "@/app";
 import { logout } from "@/user/actions";
 import { getUserId } from "@/user/server";
 
@@ -14,12 +15,15 @@ export function Header() {
 			className="navbar bg-neutral text-neutral-content"
 		>
 			<nav className="flex-1">
-				<a href="/" className="btn btn-ghost">
-					Home
-				</a>
-				<a href="/chat" className="btn btn-ghost">
-					Chat
-				</a>
+				{!loggedIn ? (
+					<a href={Routes.login.pathname()} className="btn btn-ghost">
+						Login
+					</a>
+				) : (
+					<a href={Routes.newChat.pathname()} className="btn btn-ghost">
+						New Chat
+					</a>
+				)}
 			</nav>
 			{loggedIn && (
 				<form action={logout}>
