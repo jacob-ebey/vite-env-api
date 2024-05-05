@@ -42,13 +42,8 @@ export default async function ChatRoute() {
 
 	return (
 		<div>
-			<nav className="sticky top-0 md:hidden bg-base-100">
-				<a href={Routes.chatList.pathname()} className="btn btn-ghost">
-					Back to Chat List
-				</a>
-			</nav>
-			<div className="pb-24 md:pt-12">
-				<div className="w-full max-w-2xl px-4 mx-auto">
+			<div className="pb-24">
+				<div className="p-4">
 					<SendMessageForm
 						key={initialChat?.id}
 						chatId={initialChat?.id}

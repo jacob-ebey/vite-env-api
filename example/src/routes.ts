@@ -19,7 +19,7 @@ export const routes = createRoutes([
 		import: () => import("./routes/shell/route"),
 		children: [
 			{
-				id: "signup",
+				id: "login",
 				index: true,
 				middleware: [redirectIfLoggedInMiddleware("/chat")],
 				import: () => import("./routes/login/route"),

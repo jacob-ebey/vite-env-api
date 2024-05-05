@@ -8,6 +8,9 @@ import * as ReactDOM from "react-dom";
 import { useEnhancedActionState } from "framework/client";
 import { FormOptions } from "framework/shared";
 
+import { Routes } from "@/app";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useForm } from "@/forms/client";
 
 import type { sendMessage } from "./actions";
@@ -93,7 +96,7 @@ export function SendMessageForm({
 			<form
 				id={form.id}
 				noValidate={form.noValidate}
-				className="fixed bottom-0 left-0 right-0 px-4 pb-6 bg-base-100 md:px-0 md:relative md:bottom-auto md:left-auto md:right-auto"
+				className="fixed bottom-0 left-0 right-0 z-20 px-4 py-4 md:-mt-4 bg-base-100 md:px-0 md:bottom-auto md:left-auto md:right-auto md:sticky md:top-0 bg-background"
 				ref={formRef}
 				action={dispatch}
 				onSubmit={(event) => {
@@ -106,6 +109,10 @@ export function SendMessageForm({
 				}}
 			>
 				<FormOptions preventScrollReset revalidate={false} />
+
+				<Button asChild size="sm" variant="ghost" className="mb-1 md:hidden">
+					<a href={Routes.chatList.pathname()}>Back to Chat List</a>
+				</Button>
 
 				<input
 					ref={messageInputRef}
@@ -136,7 +143,7 @@ function SendMessageLabel({
 }) {
 	return (
 		<div className="relative">
-			<label className="flex items-center w-full gap-2 pr-0 border-0 border-b input input-bordered focus:outline-none focus-within:outline-none">
+			<label className="flex items-center w-full gap-2 pr-0 focus:outline-none focus-within:outline-none">
 				<span className="sr-only">Send a message</span>
 				{children}
 				<SendMessageButton />
@@ -158,7 +165,7 @@ function SendMessageInput({ field }: { field: FieldMetadata<string> }) {
 	const form = ReactDOM.useFormStatus();
 
 	return (
-		<input
+		<Input
 			type="text"
 			className="grow"
 			placeholder="Message"
@@ -185,9 +192,11 @@ function SendMessageButton() {
 	}
 
 	return (
-		<button
+		<Button
 			type="submit"
-			className="flex items-center justify-center h-full aspect-square btn btn-ghost"
+			className="flex items-center justify-center"
+			variant="ghost"
+			size="icon"
 		>
 			<svg
 				fill="none"
@@ -203,7 +212,7 @@ function SendMessageButton() {
 					d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
 				/>
 			</svg>
-		</button>
+		</Button>
 	);
 }
 

@@ -1,11 +1,20 @@
 import { Routes } from "@/app";
 import { getChatsForUser } from "@/cache/chat";
+import { Button } from "@/components/ui/button";
+
 import { clearChats } from "./actions";
 
 export default function ChatListRoute() {
 	return (
-		<main className="container flex-1 h-0 px-4 pt-12 pb-24 mx-auto overflow-y-auto">
-			<h2 className="mb-4 text-2xl">Chat History</h2>
+		<main className="flex-1 h-0 p-4 overflow-y-auto">
+			<div className="sticky top-0 z-20 flex items-center justify-between bg-background">
+				<h2 className="mb-4 text-lg">Chat History</h2>
+				<form action={clearChats} className="mb-4">
+					<Button type="submit" variant="destructive" size="sm">
+						Clear All
+					</Button>
+				</form>
+			</div>
 
 			<ChatList />
 		</main>
@@ -46,18 +55,13 @@ export async function ChatList({ revalidate }: { revalidate?: string }) {
 
 	return (
 		<>
-			<form action={clearChats} className="mb-4">
-				<button type="submit" className="btn btn-outline">
-					Clear Chat History
-				</button>
-			</form>
-			<ul className="flex flex-col gap-3 mx-auto">
+			<ul className="flex flex-col gap-4 mx-auto">
 				{chats.map((chat) => (
 					<li key={chat.id}>
 						<a
 							href={Routes.chatDetail.pathname(chat.id)}
 							data-revalidate={revalidate}
-							className="block p-2 group"
+							className="block group"
 						>
 							<span className="group-hover:underline group-focus:underline">
 								<span className="block">{chat.name}</span>

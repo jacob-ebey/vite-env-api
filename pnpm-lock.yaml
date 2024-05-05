@@ -45,6 +45,15 @@ importers:
       '@hattip/core':
         specifier: 0.0.45
         version: 0.0.45
+      '@radix-ui/react-icons':
+        specifier: ^1.3.0
+        version: 1.3.0(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
+      '@radix-ui/react-label':
+        specifier: ^2.0.2
+        version: 2.0.2(@types/react-dom@18.2.25)(@types/react@18.2.77)(react-dom@0.0.0-experimental-96c584661-20240412(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)))(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
+      '@radix-ui/react-slot':
+        specifier: ^1.0.2
+        version: 1.0.2(@types/react@18.2.77)(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
       ai:
         specifier: 3.0.29
         version: 3.0.29(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))(solid-js@1.8.17)(svelte@4.2.15)(vue@3.4.24(typescript@5.4.5))(zod@3.23.4)
@@ -54,6 +63,9 @@ importers:
       better-sqlite3:
         specifier: 9.5.0
         version: 9.5.0
+      class-variance-authority:
+        specifier: ^0.7.0
+        version: 0.7.0
       clsx:
         specifier: 2.1.0
         version: 2.1.0
@@ -93,6 +105,12 @@ importers:
       secure-json-parse:
         specifier: 2.7.0
         version: 2.7.0
+      tailwind-merge:
+        specifier: ^2.3.0
+        version: 2.3.0
+      tailwindcss-animate:
+        specifier: ^1.0.7
+        version: 1.0.7(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5)))
       tiny-markdown-parser:
         specifier: 1.0.1
         version: 1.0.1(patch_hash=3jrmr2nhuyzv6ijpvypudvnu64)
@@ -357,6 +375,10 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
+
+  '@babel/runtime@7.24.5':
+    resolution: {integrity: sha512-Nms86NXrsaeU9vbBJKni6gXiEXZ4CVpYVzEjDH9Sb8vmZ3UljyA1GSOJl/6LGPO8EHLuSF9H+IxNXHPX8QHJ4g==}
+    engines: {node: '>=6.9.0'}
 
   '@babel/template@7.24.0':
     resolution: {integrity: sha512-Bkf2q8lMB0AFpX0NFEqSbx1OkTHf0f+0j82mkw+ZpzBnkk7e9Ql0891vlfgi+kHwOk8tQjiQHpqh4LaSa0fKEA==}
@@ -961,6 +983,55 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
+  '@radix-ui/react-compose-refs@1.0.1':
+    resolution: {integrity: sha512-fDSBgd44FKHa1FRMU59qBMPFcl2PZE+2nmqunj+BWFyYYjnhIDWL2ItDs3rrbJDQOtzt5nIebLCQc4QRfz6LJw==}
+    peerDependencies:
+      '@types/react': '*'
+      react: 0.0.0-experimental-96c584661-20240412
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@radix-ui/react-icons@1.3.0':
+    resolution: {integrity: sha512-jQxj/0LKgp+j9BiTXz3O3sgs26RNet2iLWmsPyRz2SIcR4q/4SbazXfnYwbAr+vLYKSfc7qxzyGQA1HLlYiuNw==}
+    peerDependencies:
+      react: 0.0.0-experimental-96c584661-20240412
+
+  '@radix-ui/react-label@2.0.2':
+    resolution: {integrity: sha512-N5ehvlM7qoTLx7nWPodsPYPgMzA5WM8zZChQg8nyFJKnDO5WHdba1vv5/H6IO5LtJMfD2Q3wh1qHFGNtK0w3bQ==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: 0.0.0-experimental-96c584661-20240412
+      react-dom: 0.0.0-experimental-96c584661-20240412
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+
+  '@radix-ui/react-primitive@1.0.3':
+    resolution: {integrity: sha512-yi58uVyoAcK/Nq1inRY56ZSjKypBNKTa/1mcL8qdl6oJeEaDbOldlzrGn7P6Q3Id5d+SYNGc5AJgc4vGhjs5+g==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: 0.0.0-experimental-96c584661-20240412
+      react-dom: 0.0.0-experimental-96c584661-20240412
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+
+  '@radix-ui/react-slot@1.0.2':
+    resolution: {integrity: sha512-YeTpuq4deV+6DusvVUW4ivBgnkHwECUu0BiN43L5UCDFgdhsRUWAghhTF5MbvNTPzmiFOx90asDSUjWuCNapwg==}
+    peerDependencies:
+      '@types/react': '*'
+      react: 0.0.0-experimental-96c584661-20240412
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
   '@rollup/pluginutils@5.1.0':
     resolution: {integrity: sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==}
     engines: {node: '>=14.0.0'}
@@ -1454,6 +1525,9 @@ packages:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
 
+  class-variance-authority@0.7.0:
+    resolution: {integrity: sha512-jFI8IQw4hczaL4ALINxqLEXQbWcNjoSkloa4IaufXCJr6QawJyw7tuRysRsrE8w2p/4gGaxKIt/hX3qz/IbD1A==}
+
   cli-color@2.0.4:
     resolution: {integrity: sha512-zlnpg0jNcibNrO7GG9IeHH7maWFeCz+Ja1wx/7tZNU5ASSSSZ+/qZciM0/LHCYxSdqv5h2sdbQ/PXYdOuetXvA==}
     engines: {node: '>=0.10'}
@@ -1461,6 +1535,10 @@ packages:
   cliui@8.0.1:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
+
+  clsx@2.0.0:
+    resolution: {integrity: sha512-rQ1+kcj+ttHG0MKVGBUXwayCCF1oh39BF5COIpRzuCEv8Mwjv0XucrI2ExNTOn9IlLifGClWQcU9BrZORvtw6Q==}
+    engines: {node: '>=6'}
 
   clsx@2.1.0:
     resolution: {integrity: sha512-m3iNNWpd9rl3jvvcBnu70ylMdrXt8Vlq4HYadnU5fwcOtvkSQWPmj7amUcDT2qYI7risszBjI5AUIUox9D16pg==}
@@ -2525,6 +2603,9 @@ packages:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
 
+  regenerator-runtime@0.14.1:
+    resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -2740,6 +2821,14 @@ packages:
     resolution: {integrity: sha512-zjEkcP8Ywmj+xOJW3lIT65ciY/4AL4e/Or7Gj0MzU3zBJNMdJiT8geVZhINavnlHRMMCcJLHhraLTAiDOTmQ9g==}
     peerDependencies:
       vue: '>=3.2.26 < 4'
+
+  tailwind-merge@2.3.0:
+    resolution: {integrity: sha512-vkYrLpIP+lgR0tQCG6AP7zZXCTLc1Lnv/CCRT3BqJ9CZ3ui2++GPaGb1x/ILsINIMSYqqvrpqjUFsMNLlW99EA==}
+
+  tailwindcss-animate@1.0.7:
+    resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
+    peerDependencies:
+      tailwindcss: '>=3.0.0 || insiders'
 
   tailwindcss@3.4.3:
     resolution: {integrity: sha512-U7sxQk/n397Bmx4JHbJx/iSOOv5G+II3f1kpLpY2QeUv5DcPdcTsYLlusZfq1NthHS1c1cZoyFmmkex1rzke0A==}
@@ -3141,6 +3230,10 @@ snapshots:
     dependencies:
       '@babel/core': 7.24.4
       '@babel/helper-plugin-utils': 7.24.0
+
+  '@babel/runtime@7.24.5':
+    dependencies:
+      regenerator-runtime: 0.14.1
 
   '@babel/template@7.24.0':
     dependencies:
@@ -3554,6 +3647,45 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@radix-ui/react-compose-refs@1.0.1(@types/react@18.2.77)(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))':
+    dependencies:
+      '@babel/runtime': 7.24.5
+      react: 0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)
+    optionalDependencies:
+      '@types/react': 18.2.77
+
+  '@radix-ui/react-icons@1.3.0(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))':
+    dependencies:
+      react: 0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)
+
+  '@radix-ui/react-label@2.0.2(@types/react-dom@18.2.25)(@types/react@18.2.77)(react-dom@0.0.0-experimental-96c584661-20240412(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)))(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))':
+    dependencies:
+      '@babel/runtime': 7.24.5
+      '@radix-ui/react-primitive': 1.0.3(@types/react-dom@18.2.25)(@types/react@18.2.77)(react-dom@0.0.0-experimental-96c584661-20240412(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)))(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
+      react: 0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)
+      react-dom: 0.0.0-experimental-96c584661-20240412(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
+    optionalDependencies:
+      '@types/react': 18.2.77
+      '@types/react-dom': 18.2.25
+
+  '@radix-ui/react-primitive@1.0.3(@types/react-dom@18.2.25)(@types/react@18.2.77)(react-dom@0.0.0-experimental-96c584661-20240412(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)))(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))':
+    dependencies:
+      '@babel/runtime': 7.24.5
+      '@radix-ui/react-slot': 1.0.2(@types/react@18.2.77)(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
+      react: 0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)
+      react-dom: 0.0.0-experimental-96c584661-20240412(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
+    optionalDependencies:
+      '@types/react': 18.2.77
+      '@types/react-dom': 18.2.25
+
+  '@radix-ui/react-slot@1.0.2(@types/react@18.2.77)(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))':
+    dependencies:
+      '@babel/runtime': 7.24.5
+      '@radix-ui/react-compose-refs': 1.0.1(@types/react@18.2.77)(react@0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi))
+      react: 0.0.0-experimental-96c584661-20240412(patch_hash=6wyvz47ob5j5erubjolv4z2rsi)
+    optionalDependencies:
+      '@types/react': 18.2.77
 
   '@rollup/pluginutils@5.1.0(rollup@4.14.2)':
     dependencies:
@@ -4084,6 +4216,10 @@ snapshots:
 
   chownr@2.0.0: {}
 
+  class-variance-authority@0.7.0:
+    dependencies:
+      clsx: 2.0.0
+
   cli-color@2.0.4:
     dependencies:
       d: 1.0.2
@@ -4097,6 +4233,8 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
+
+  clsx@2.0.0: {}
 
   clsx@2.1.0: {}
 
@@ -5101,6 +5239,8 @@ snapshots:
     dependencies:
       picomatch: 2.3.1
 
+  regenerator-runtime@0.14.1: {}
+
   require-directory@2.1.1: {}
 
   resolve-pkg-maps@1.0.0: {}
@@ -5348,6 +5488,14 @@ snapshots:
   swrv@1.0.4(vue@3.4.24(typescript@5.4.5)):
     dependencies:
       vue: 3.4.24(typescript@5.4.5)
+
+  tailwind-merge@2.3.0:
+    dependencies:
+      '@babel/runtime': 7.24.5
+
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))):
+    dependencies:
+      tailwindcss: 3.4.3(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5))
 
   tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.12.7)(typescript@5.4.5)):
     dependencies:
